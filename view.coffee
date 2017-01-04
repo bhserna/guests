@@ -1,139 +1,86 @@
-renderCollection = (template, collection, opts = {}) ->
-  (template(item) for item in collection).join opts.joinWith or ""
+{renderable, div, h3, text, button, br, form, input, label, small, strong, ul, li, table, thead, tbody, tr, th, td, raw} = teacup
 
-renderUnless = (condition, html) ->
-  if condition then "" else html
+panel = renderable (title, content) ->
+  div ".panel.panel-default", style: "margin-top: 10px", ->
+    div ".panel-heading", ->
+      h3 ".panel-title", title
+    content()
 
-renderIf = (condition, html) ->
-  if condition then html else ""
+panelBody = renderable (content) ->
+  div ".panel-body", content
 
-newInvitationView = (adder) -> """
-<div class="panel panel-default" style="margin-top: 10px">
-  <div class="panel-heading">
-    <h3 class="panel-title">Nueva invitación</h3>
-  </div>
-  <div class="panel-body">
-  #{renderIf adder.isEditingInvitationTitle(), invitationTitleFormView(adder)}
-  #{renderUnless adder.isEditingInvitationTitle(), invitationTitleView(adder)}
-  #{renderUnless adder.isEditingInvitationTitle(), invitationGuestsView(adder)}
-  </div>
-  #{renderIf adder.addedGuests().length, invitationCommitView()}
-</div>
-"""
+panelFooter = renderable (content) ->
+  div ".panel-footer", content
 
-invitationCommitView = -> """
-<div class="panel-footer">
-  <button id="commitInvitation" class="btn btn-primary">
-  Guardar invitación
-  </button>
-</div>
-"""
+newInvitationView = renderable (adder) ->
+  panel "Nueva invitación", ->
+    panelBody ->
+      if adder.isEditingInvitationTitle()
+        form "#addInvitationTitle", ->
+          div ".form-group", style: "margin-right: 10px;", ->
+            label for: "invitationTitle", "Título de la invitación"
+            input "#invitationTitle.form-control",
+              type: "text",
+              style: "max-width: 300px",
+              value: adder.invitationTitle(),
+              placeholder: "Familia Perez"
+          button ".btn.btn-default", ype: "submit", "Agregar"
+      else
+        small ".text-muted", "Título de la invitación"
+        br()
+        strong adder.invitationTitle()
+        button "#editInvitationTitle.btn.btn-link.btn-sm", "Editar"
+        br()
+        br()
+        small ".text-muted", "Invitados"
+        br()
+        ul style: "padding-left: 1.5em", ->
+          for guest in adder.addedGuests()
+            li ->
+              if guest.isEditing
+                form "#updateGuest.form-inline", "data-id": guest.id, style: "margin-bottom: 5px", ->
+                  div ".form-group", ->
+                    input "#guest_#{guest.id}_name.form-control",
+                      type: "text",
+                      style: "max-width: 300px; margin-right: 5px;",
+                      value: guest.name,
+                      placeholder: "Juan Perez"
+                  button ".btn.btn-default", type: "submit", "Actualizar"
+              else
+                text guest.name
+                button "#editInvitationGuest.btn.btn-link.btn-sm", "data-id": guest.id, ->
+                  text "Editar"
+          li ->
+            form "#addGuest.form-inline", ->
+              div ".form-group", ->
+                input "#name.form-control",
+                  type: "text",
+                  style: "max-width: 300px; margin-right: 5px;",
+                  placeholder: "Juan Perez"
+              button ".btn.btn-default", type: "submit", "Agregar"
+    if adder.addedGuests().length and not adder.isEditingInvitationTitle()
+      panelFooter ->
+        button "#commitInvitation.btn.btn-primary", "Guardar invitación"
 
-invitationGuestsView = (adder) -> """
-<br/>
-<br/>
-<small class="text-muted">Invitados</small>
-<br/>
-<ul style="padding-left: 1.5em">
-#{renderCollection invitationGuestView, adder.addedGuests()}
-<li>
-#{guestFormView()}
-</li>
-</ul>
-"""
+invitationsView = renderable (list) ->
+  panel "Lista de invitaciones", ->
+    table ".table", ->
+      thead ->
+        tr ->
+          th "Título"
+          th "Invitados"
+      tbody ->
+        for invitation in list.invitations()
+          tr ->
+            td invitation.title
+            td _.map(invitation.guests, (guest) -> guest.name).join ", "
 
-invitationGuestView = (guest) ->
-  form = -> """
-  <form id="updateGuest" data-id="#{guest.id}" class="form-inline" style="margin-bottom: 5px">
-    <div class="form-group">
-      <input type="text" style="max-width: 300px" class="form-control"
-       id="guest_#{guest.id}_name"
-       value="#{guest.name}"
-       placeholder="Juan Perez">
-    </div>
-    <button type="submit" class="btn btn-default">Actualizar</button>
-  </form>
-  """
-
-  display = -> """
-  #{guest.name}
-  <button class="btn btn-link btn-sm"
-   id="editInvitationGuest"
-   data-id="#{guest.id}">Editar</button>
-  """
-
-  """
-  <li>
-  #{renderIf guest.isEditing, form()}
-  #{renderUnless guest.isEditing, display()}
-  </li>
-  """
-
-invitationTitleView = (adder) -> """
-<small class="text-muted">Título de la invitación</small>
-<br/><strong>#{adder.invitationTitle()}</strong>
-<button class="btn btn-link btn-sm" id="editInvitationTitle">Editar</button>
-"""
-
-invitationTitleFormView = (adder) -> """
-<form id="addInvitationTitle">
-  <div class="form-group" style="margin-right: 10px;">
-    <label for="invitationTitle">Título de la invitación</label>
-    <input type="text" style="max-width: 300px" class="form-control"
-     id="invitationTitle"
-     value="#{adder.invitationTitle()}"
-     placeholder="Familia Perez">
-  </div>
-  <button type="submit" class="btn btn-default">Agregar</button>
-</form>
-"""
-
-guestFormView = -> """
-<form id="addGuest" class="form-inline">
-  <div class="form-group">
-    <input type="text" style="max-width: 300px" class="form-control"
-     id="name" placeholder="Juan Perez">
-  </div>
-  <button type="submit" class="btn btn-default">Agregar</button>
-</form>
-"""
-
-invitationsView = (list) -> """
-<div class="panel panel-default" style="margin-top: 10px">
-  <div class="panel-heading">
-    <h3 class="panel-title">Lista de invitaciones</h3>
-  </div>
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Títlulo</th>
-        <th>Invitados</th>
-      </tr>
-    </thead>
-    <tbody>
-      #{renderCollection invitationItemView, list.invitations()}
-    </tbody>
-  </table>
-</div>
-"""
-
-invitationItemView = (invitation) -> """
-<tr>
-  <td>#{invitation.title}</td>
-  <td>#{renderCollection ((guest) -> guest.name), invitation.guests, joinWith: ", "}</td>
-</tr>
-"""
-
-view = (adder, list) -> """
-<div class="row">
-  <div class="col-md-4">
-  #{newInvitationView(adder)}
-  </div>
-  <div class="col-md-8">
-  #{invitationsView(list)}
-  </div>
-</div>
-"""
+view = renderable (adder, list) ->
+  div ".row", ->
+    div ".col-md-4", ->
+      newInvitationView(adder)
+    div ".col-md-8", ->
+      invitationsView(list)
 
 render = (adder, list) ->
   $("#app").html(view(adder, list))
