@@ -2,22 +2,63 @@ class Guest
   constructor: ({@id, @name})->
 
 class Invitation
-  constructor: ({@title, @guests})->
+  constructor: ({@id, @title, @guests})->
 
 class window.GuestsApp
   constructor: (@store) ->
-    @newInvitation = new NewInvitation(@store)
     @invitationsList = new InvitationsList(@store)
+    @invitationEditor = new InvitationEditor(@invitationsList)
+    @addInvitation()
+
+  addInvitation: ->
+    @invitationEditor.addInvitation()
+
+  editInvitationWithId: (id) ->
+    @invitationEditor.editInvitationWithId(id)
 
 class InvitationsList
   constructor: (@store) ->
-    @invitations = @store.allInvitations()
+    @invitations = @store.fetchRecords()
 
-class NewInvitation
-  constructor: (@store) ->
-    @title = ""
-    @guests = []
+  findInvitation: (id) ->
+    _.findWhere(@invitations, id: id)
+
+  addInvitation: (title, guests) ->
+    id = @invitations.length + 1
+    invitation = @_buildInvitation(id, title, guests)
+    @invitations.push(invitation)
+    @store.updateRecords(@invitations)
+
+  updateInvitation: (id, title, guests) ->
+    invitation = @_buildInvitation(id, title, guests)
+    @invitations = _.reject(@invitations, (invitation) -> invitation.id is id)
+    @invitations.push(invitation)
+    @invitations = _.sortBy(@invitations, "id")
+    @store.updateRecords(@invitations)
+
+  _buildInvitation: (id, title, guests) ->
+    guests = (new Guest(guest) for guest in guests)
+    invitation = new Invitation(id: id, title: title, guests: guests)
+
+class InvitationEditor
+  constructor: (@list) ->
+    @init()
+
+  init: (opts = {})->
+    @title = opts.title or ""
+    @guests = (new EditableGuest(guest) for guest in (opts.guests or []))
     @turnOnTitleEdition()
+
+  addInvitation: ->
+    @isAddingInvitation = true
+    @isEditingInvitation = false
+
+  editInvitationWithId: (id) ->
+    @id = id
+    @isAddingInvitation = false
+    @isEditingInvitation = true
+    @init(@list.findInvitation(id))
+    @isEditingTitle = false
 
   addTitle: (title) ->
     @title = title
@@ -27,7 +68,7 @@ class NewInvitation
     @isEditingTitle = true
 
   addGuest: (attrs) ->
-    id = @guests.length + 1
+    attrs.id = @guests.length + 1
     guest = new EditableGuest(attrs)
     @guests.push(guest)
 
@@ -44,9 +85,12 @@ class NewInvitation
     (guest for guest in @guests when guest.id is id)[0]
 
   commit: ->
-    guests = (new Guest(guest) for guest in @guests)
-    invitation = new Invitation(title: @title, guests: guests)
-    @store.addInvitation(invitation)
+    if @isAddingInvitation
+      @list.addInvitation(@title, @guests)
+    else
+      @list.updateInvitation(@id, @title, @guests)
+      @addInvitation()
+    @init()
 
   class EditableGuest extends Guest
     isEditing: false
@@ -60,29 +104,24 @@ class NewInvitation
     turnOffEditionMode: ->
       @isEditing = false
 
-class window.EditInvitationWithGuests
+class EditInvitation
   constructor: (@store) ->
-    @invitation = null
+    @isActive = false
 
-  isActive: ->
-    !!@invitation
-
-  activateForInvitationWithId: (id) ->
-    @invitation = @store.findInvitation(id)
+  editInvitationWithId: (id) ->
+    @isActive = true
+    invitation = @store.findInvitation(id)
+    @title = invitation.title
+    @guests = invitation.guests
 
 class window.MemoryStore
   constructor: (@records = []) ->
-  allInvitations: -> @records
-  addInvitation: (record) -> @records.push(record)
-  findInvitation: (id) -> _.findWhere(@record, id: id)
+  fetchRecords: -> @records
+  updateRecords: (records) -> @records = records
 
 window.LocalStore =
-  init: ->
-     @records = JSON.parse(localStorage.invitations || "[]")
+  fetchRecords: ->
+     JSON.parse(localStorage.invitations || "[]")
 
-  allInvitations: ->
-     @records
-
-  addInvitation: (record) ->
-     @records.push(record)
-     localStorage.invitations = JSON.stringify(@records)
+  updateRecords: (records) ->
+    localStorage.invitations = JSON.stringify(records)
