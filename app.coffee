@@ -104,16 +104,6 @@ class InvitationEditor
     turnOffEditionMode: ->
       @isEditing = false
 
-class EditInvitation
-  constructor: (@store) ->
-    @isActive = false
-
-  editInvitationWithId: (id) ->
-    @isActive = true
-    invitation = @store.findInvitation(id)
-    @title = invitation.title
-    @guests = invitation.guests
-
 class window.MemoryStore
   constructor: (@records = []) ->
   fetchRecords: -> @records
