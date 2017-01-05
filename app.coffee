@@ -1,53 +1,58 @@
-class window.ShowAllGuests
+class Guest
+  constructor: ({@id, @name})->
+
+class Invitation
+  constructor: ({@title, @guests})->
+
+class window.GuestsApp
   constructor: (@store) ->
-  all: -> @store.all()
+    @newInvitation = new NewInvitation(@store)
+    @invitationsList = new InvitationsList(@store)
 
-class window.ShowAllInvitations
+class InvitationsList
   constructor: (@store) ->
-  invitations: -> @store.allInvitations()
+    @invitations = @store.allInvitations()
 
-class window.AddGuestsByInvitation
+class NewInvitation
   constructor: (@store) ->
-    @invitation = new Invitation
-    @editInvitationTitle()
+    @title = ""
+    @guests = []
+    @turnOnTitleEdition()
 
-  isEditingInvitationTitle: ->
-    @editingInvitationTitle
+  addTitle: (title) ->
+    @title = title
+    @isEditingTitle = false
 
-  addInvitationTitle: (title) ->
-    @invitation.setTitle(title)
-    @editingInvitationTitle = false
-
-  editInvitationTitle: ->
-    @editingInvitationTitle = true
-
-  invitationTitle: ->
-    @invitation.title
-
-  addedGuests: ->
-    @invitation.guests
+  turnOnTitleEdition: ->
+    @isEditingTitle = true
 
   addGuest: (attrs) ->
-    @invitation.addGuest(new Guest(attrs))
+    id = @guests.length + 1
+    guest = new EditableGuest(attrs)
+    @guests.push(guest)
 
-  editGuest: (id) ->
-    @invitation.guestToEditionMode(id)
+  turnOnGuestEdition: (id) ->
+    guest = @findGuest(id)
+    guest.toEditionMode()
 
   updateGuest: (id, attrs) ->
-    @invitation.updateGuest(id, attrs)
+    guest = @findGuest(id)
+    guest.setName(attrs.name)
+    guest.turnOffEditionMode()
+
+  findGuest: (id) ->
+    (guest for guest in @guests when guest.id is id)[0]
 
   commit: ->
-    @store.addInvitation(@invitation)
+    guests = (new Guest(guest) for guest in @guests)
+    invitation = new Invitation(title: @title, guests: guests)
+    @store.addInvitation(invitation)
 
-  class window.Guest
-    constructor: ({@name}) ->
-      @isEditing = false
+  class EditableGuest extends Guest
+    isEditing: false
 
     setName: (name) ->
       @name = name
-
-    setId: (id) ->
-      @id = id
 
     toEditionMode: ->
       @isEditing = true
@@ -55,34 +60,21 @@ class window.AddGuestsByInvitation
     turnOffEditionMode: ->
       @isEditing = false
 
-  class window.Invitation
-    constructor: ->
-      @title = ""
-      @guests = []
+class window.EditInvitationWithGuests
+  constructor: (@store) ->
+    @invitation = null
 
-    setTitle: (title) ->
-      @title = title
+  isActive: ->
+    !!@invitation
 
-    guestToEditionMode: (id) ->
-      guest = @findGuest(id)
-      guest.toEditionMode()
-
-    updateGuest: (id, attrs) ->
-      guest = @findGuest(id)
-      guest.setName(attrs.name)
-      guest.turnOffEditionMode()
-
-    findGuest: (id) ->
-      (guest for guest in @guests when guest.id is id)[0]
-
-    addGuest: (guest) ->
-      guest.setId(@guests.length + 1)
-      @guests.push(guest)
+  activateForInvitationWithId: (id) ->
+    @invitation = @store.findInvitation(id)
 
 class window.MemoryStore
   constructor: (@records = []) ->
   allInvitations: -> @records
   addInvitation: (record) -> @records.push(record)
+  findInvitation: (id) -> _.findWhere(@record, id: id)
 
 window.LocalStore =
   init: ->
