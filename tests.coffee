@@ -2,136 +2,150 @@
 first = (list) -> list[0]
 second = (list) -> list[1]
 
+class TestDisplay
+  editor: {}
+  list: {}
+
+  renderEditor: (data) ->
+    @editor = data
+
+  renderList: (data) ->
+    @list = data
+
 module "Add guests by invitation", (hooks) ->
   hooks.beforeEach ->
     store = new MemoryStore
-    @app = new GuestsApp(store)
-    @list = @app.invitationsList
-    @editor = @app.invitationEditor
-    @app.addInvitation()
+    @page = new TestDisplay
+    @app = new GuestsApp(store, @page)
+    @editor = @app.addInvitation()
 
   test "editor is adding invitation", (assert) ->
-    assert.ok @editor.isAddingInvitation
-    assert.notOk @editor.isEditingInvitation
+    assert.ok @page.editor.isAddingInvitation
+    assert.notOk @page.editor.isEditingInvitation
 
   test "on init is clean", (assert) ->
-    assert.equal @editor.title, ""
-    assert.equal @editor.guests.length, 0
-    assert.equal @list.invitations.length, 0
+    assert.equal @page.editor.title, ""
+    assert.equal @page.editor.guests.length, 0
+    assert.equal @page.list.invitations.length, 0
 
   test "sets the invitation title", (assert) ->
-    @editor.addTitle("Serna Moreno")
-    assert.equal @editor.title, "Serna Moreno"
+    @app.editor.addTitle("Serna Moreno")
+    assert.equal @page.editor.title, "Serna Moreno"
 
   test "sets the invitation title and then edit it", (assert) ->
-    assert.ok @editor.isEditingTitle
+    assert.ok @page.editor.isEditingTitle
 
-    @editor.addTitle("Serna More")
-    assert.notOk @editor.isEditingTitle
-    assert.equal @editor.title, "Serna More"
+    @app.editor.addTitle("Serna More")
+    assert.notOk @page.editor.isEditingTitle
+    assert.equal @page.editor.title, "Serna More"
 
-    @editor.turnOnTitleEdition()
-    assert.ok @editor.isEditingTitle
-    assert.equal @editor.title, "Serna More"
+    @app.editor.turnOnTitleEdition()
+    assert.ok @page.editor.isEditingTitle
+    assert.equal @page.editor.title, "Serna More"
 
-    @editor.addTitle("Serna Moreno")
-    assert.notOk @editor.isEditingTitle
-    assert.equal @editor.title, "Serna Moreno"
+    @app.editor.addTitle("Serna Moreno")
+    assert.notOk @page.editor.isEditingTitle
+    assert.equal @page.editor.title, "Serna Moreno"
 
   test "adds a guest to the current list", (assert) ->
-    @editor.addTitle("Serna Moreno")
-    @editor.addGuest(name: "Benito Serna")
-    assert.equal @editor.guests.length, 1
-    assert.equal first(@editor.guests).name, "Benito Serna"
+    @app.editor.addTitle("Serna Moreno")
+    @app.editor.addGuest(name: "Benito Serna")
+    assert.equal @page.editor.guests.length, 1
+    assert.equal first(@page.editor.guests).name, "Benito Serna"
 
   test "edit guest from the current list", (assert) ->
-    @editor.addTitle("Serna Moreno")
-    @editor.addGuest(name: "Benito")
-    getGuest = => first(@editor.guests)
+    @app.editor.addTitle("Serna Moreno")
+    @app.editor.addGuest(name: "Benito")
+    getGuest = => first(@page.editor.guests)
     assert.notOk getGuest().isEditing
 
-    @editor.turnOnGuestEdition(getGuest().id)
+    @app.editor.turnOnGuestEdition(getGuest().id)
     assert.ok getGuest().isEditing
 
-    @editor.updateGuest(getGuest().id, name: "Benito Serna")
+    @app.editor.updateGuest(getGuest().id, name: "Benito Serna")
     assert.equal getGuest().name, "Benito Serna"
 
   test "add more than one guests to the current list", (assert) ->
-    @editor.addTitle("Serna Moreno")
-    @editor.addGuest(name: "Benito Serna")
-    @editor.addGuest(name: "Maripaz Moreno")
-    assert.equal @editor.guests.length, 2
-    assert.equal second(@editor.guests).name, "Maripaz Moreno"
+    @app.editor.addTitle("Serna Moreno")
+    @app.editor.addGuest(name: "Benito Serna")
+    @app.editor.addGuest(name: "Maripaz Moreno")
+    assert.equal @page.editor.guests.length, 2
+    assert.equal second(@page.editor.guests).name, "Maripaz Moreno"
 
   test "commits the added guests to the store", (assert) ->
-    @editor.addTitle("Serna Moreno")
-    @editor.addGuest(name: "Benito Serna")
-    @editor.addGuest(name: "Maripaz Moreno")
-    @editor.commit()
-    assert.equal @list.invitations.length, 1
+    @app.editor.addTitle("Serna Moreno")
+    @app.editor.addGuest(name: "Benito Serna")
+    @app.editor.addGuest(name: "Maripaz Moreno")
+    @app.editor.commit()
+    assert.equal @page.list.invitations.length, 1
 
-    invitation = first @list.invitations
+    invitation = first @page.list.invitations
     assert.equal invitation.title, "Serna Moreno"
     assert.equal first(invitation.guests).name, "Benito Serna"
     assert.equal second(invitation.guests).name, "Maripaz Moreno"
 
   test "after commits the editor is cleaned", (assert) ->
-    @editor.addTitle("Serna Moreno")
-    @editor.addGuest(name: "Benito Serna")
-    @editor.addGuest(name: "Maripaz Moreno")
-    @editor.commit()
-    assert.equal @editor.title, ""
-    assert.equal @editor.guests.length, 0
+    @app.editor.addTitle("Serna Moreno")
+    @app.editor.addGuest(name: "Benito Serna")
+    @app.editor.addGuest(name: "Maripaz Moreno")
+    @app.editor.commit()
+    assert.equal @page.editor.title, ""
+    assert.equal @page.editor.guests.length, 0
 
 module "Edit invitation", (hooks) ->
   addInvitation = (app, title, guests) ->
-    editor = app.invitationEditor
     app.addInvitation()
-    editor.addTitle(title)
-    editor.addGuest(name: guest) for guest in guests
-    editor.commit()
+    app.editor.addTitle(title)
+    app.editor.addGuest(name: guest) for guest in guests
+    app.editor.commit()
 
   hooks.beforeEach ->
     store = new MemoryStore
-    @app = new GuestsApp(store)
-    @list = @app.invitationsList
-    @editor = @app.invitationEditor
+    @page = new TestDisplay
+    @app = new GuestsApp(store, @page)
     addInvitation(@app, "Inv 1", ["guest1", "guest2"])
 
   test "is not active by default", (assert) ->
-    assert.ok @editor.isAddingInvitation
-    assert.notOk @editor.isEditingInvitation
+    assert.ok @page.editor.isAddingInvitation
+    assert.notOk @page.editor.isEditingInvitation
 
   test "it can be activated for an invitation", (assert) ->
-    invitation = first @list.invitations
+    invitation = first @page.list.invitations
     @app.editInvitationWithId(invitation.id)
-    assert.notOk @editor.isAddingInvitation
-    assert.ok @editor.isEditingInvitation
+    assert.notOk @page.editor.isAddingInvitation
+    assert.ok @page.editor.isEditingInvitation
 
   test "it has the information of the invitation to edit", (assert) ->
-    invitation = first @list.invitations
+    invitation = first @page.list.invitations
     @app.editInvitationWithId(invitation.id)
-    assert.equal @editor.title, "Inv 1"
-    assert.equal first(@editor.guests).name, "guest1"
-    assert.equal second(@editor.guests).name, "guest2"
+    assert.equal @page.editor.title, "Inv 1"
+    assert.equal first(@page.editor.guests).name, "guest1"
+    assert.equal second(@page.editor.guests).name, "guest2"
 
   test "after commit it updates the invitation", (assert) ->
-    invitation = first @list.invitations
+    invitation = first @page.list.invitations
     @app.editInvitationWithId(invitation.id)
-    @editor.addTitle("Serna Moreno")
-    @editor.updateGuest(first(@editor.guests).id, name: "Benito Serna")
-    @editor.updateGuest(second(@editor.guests).id, name: "Maripaz Moreno")
-    @editor.commit()
+    @app.editor.addTitle("Serna Moreno")
+    @app.editor.updateGuest(first(@page.editor.guests).id, name: "Benito Serna")
+    @app.editor.updateGuest(second(@page.editor.guests).id, name: "Maripaz Moreno")
+    @app.editor.commit()
 
-    assert.equal @list.invitations.length, 1
-    invitation = first @list.invitations
+    assert.equal @page.list.invitations.length, 1
+    invitation = first @page.list.invitations
     assert.equal invitation.title, "Serna Moreno"
     assert.equal first(invitation.guests).name, "Benito Serna"
     assert.equal second(invitation.guests).name, "Maripaz Moreno"
 
   test "after commit it returns to adding invitation mode", (assert) ->
-    invitation = first @list.invitations
+    invitation = first @page.list.invitations
     @app.editInvitationWithId(invitation.id)
-    @editor.commit()
-    assert.ok @editor.isAddingInvitation
-    assert.notOk @editor.isEditingInvitation
+    @app.editor.commit()
+    assert.ok @page.editor.isAddingInvitation
+    assert.notOk @page.editor.isEditingInvitation
+
+  test "after commits the editor is cleaned", (assert) ->
+    invitation = first @page.list.invitations
+    @app.editInvitationWithId(invitation.id)
+    @app.editor.commit()
+    assert.equal @page.editor.title, ""
+    assert.equal @page.editor.guests.length, 0
