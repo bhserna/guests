@@ -12,10 +12,12 @@ class TestDisplay
   renderList: (data) ->
     @list = data
 
-addInvitation = (app, title, guests) ->
+addInvitation = (app, title, guests, phone, email) ->
   app.addInvitation()
   app.editor.addTitle(title)
   app.editor.addGuest(name: guest) for guest in guests
+  app.editor.updatePhone(phone)
+  app.editor.updateEmail(email)
   app.editor.commit()
 
 module "Add guests by invitation", (hooks) ->
@@ -84,6 +86,48 @@ module "Add guests by invitation", (hooks) ->
     @app.editor.addGuest(name: "Maripaz Moreno")
     assert.equal @page.editor.guests.length, 2
     assert.equal second(@page.editor.guests).name, "Maripaz Moreno"
+
+  test "add phone", (assert) ->
+    @app.editor.addTitle("Serna Moreno")
+    assert.notOk @page.editor.isEditingPhone
+
+    @app.editor.turnOnPhoneEdition()
+    assert.ok @page.editor.isEditingPhone
+
+    @app.editor.updatePhone("12341234")
+    assert.notOk @page.editor.isEditingPhone
+    assert.equal @page.editor.phone, "12341234"
+
+  test "commits the added phone to the store", (assert) ->
+    @app.editor.addTitle("Serna Moreno")
+    @app.editor.turnOnPhoneEdition()
+    @app.editor.updatePhone("12341234")
+    @app.editor.commit()
+    invitation = first @page.list.invitations
+
+    assert.equal @page.list.invitations.length, 1
+    assert.equal invitation.phone, "12341234"
+
+  test "add email", (assert) ->
+    @app.editor.addTitle("Serna Moreno")
+    assert.notOk @page.editor.isEditingEmail
+
+    @app.editor.turnOnEmailEdition()
+    assert.ok @page.editor.isEditingEmail
+
+    @app.editor.updateEmail("b@e.com")
+    assert.notOk @page.editor.isEditingEmail
+    assert.equal @page.editor.email, "b@e.com"
+
+  test "commits the added email to the store", (assert) ->
+    @app.editor.addTitle("Serna Moreno")
+    @app.editor.turnOnEmailEdition()
+    @app.editor.updateEmail("a@b.com")
+    @app.editor.commit()
+    invitation = first @page.list.invitations
+
+    assert.equal @page.list.invitations.length, 1
+    assert.equal invitation.email, "a@b.com"
 
   test "commits the added guests to the store", (assert) ->
     @app.editor.addTitle("Serna Moreno")
@@ -173,7 +217,7 @@ module "Show invitations list", (hooks) ->
     store = new MemoryStore
     @page = new TestDisplay
     @app = new GuestsApp(store, @page)
-    addInvitation(@app, "Inv 1", ["guest1", "guest2"])
+    addInvitation(@app, "Inv 1", ["guest1", "guest2"], "23452345", "a@b.com")
     addInvitation(@app, "Inv 2", ["guest1", "guest2", "guest3"])
     addInvitation(@app, "Inv 3", ["guest1"])
 
@@ -190,6 +234,14 @@ module "Show invitations list", (hooks) ->
   test "has the guests count", (assert) ->
     invitation = first @page.list.invitations
     assert.equal invitation.guests.length, 2
+
+  test "has phone", (assert) ->
+    invitation = first @page.list.invitations
+    assert.equal invitation.phone, "23452345"
+
+  test "has email", (assert) ->
+    invitation = first @page.list.invitations
+    assert.equal invitation.email, "a@b.com"
 
   test "has the total invitations count", (assert) ->
     assert.equal @page.list.invitations.length, 3

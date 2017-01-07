@@ -2,14 +2,17 @@ class Guest
   constructor: ({@id, @name})->
 
 class Invitation
-  constructor: ({@id, @title, @guests})->
+  constructor: ({@id, @title, @guests, @phone, @email})->
 
 class EditableInvitation
   constructor: (opts = {}) ->
     @id = opts.id
     @title = opts.title or ""
     @guests = (new EditableGuest(guest) for guest in (opts.guests or []))
+    @phone = ""
     @isNewInvitation = !@id
+    @isEditingPhone = false
+    @isEditingEmail = false
     @turnOnTitleEdition() unless @title
 
   addTitle: (title) ->
@@ -38,6 +41,20 @@ class EditableInvitation
 
   findGuest: (id) ->
     (guest for guest in @guests when guest.id is id)[0]
+
+  turnOnPhoneEdition: ->
+    @isEditingPhone = true
+
+  updatePhone: (phone) ->
+    @phone = phone
+    @isEditingPhone = false
+
+  turnOnEmailEdition: ->
+    @isEditingEmail = true
+
+  updateEmail: (email) ->
+    @email = email
+    @isEditingEmail = false
 
 class EditableGuest extends Guest
   isEditing: false
@@ -75,9 +92,9 @@ class InvitationsList
     map((invitation) -> invitation.guests.length).
     reduce((acc, count) -> acc + count)
 
-  buildInvitation: ({id, title, guests}) ->
-    guests = (new Guest(guest) for guest in guests)
-    invitation = new Invitation(id: id, title: title, guests: guests)
+  buildInvitation: (attrs) ->
+    attrs.guests = (new Guest(guest) for guest in attrs.guests)
+    invitation = new Invitation(attrs)
 
 class window.GuestsApp
   constructor: (@store, @display) ->
@@ -160,6 +177,22 @@ class EditInvitationControl
 
   deleteGuest: (id) ->
     @invitation.deleteGuest(id)
+    @updateDisplay()
+
+  turnOnPhoneEdition: ->
+    @invitation.turnOnPhoneEdition()
+    @updateDisplay()
+
+  updatePhone: (phone) ->
+    @invitation.updatePhone(phone)
+    @updateDisplay()
+
+  turnOnEmailEdition: ->
+    @invitation.turnOnEmailEdition()
+    @updateDisplay()
+
+  updateEmail: (email) ->
+    @invitation.updateEmail(email)
     @updateDisplay()
 
   commit: ->

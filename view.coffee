@@ -12,56 +12,91 @@ panelBody = renderable (content) ->
 panelFooter = renderable (content) ->
   div ".panel-footer", content
 
+invitationField = renderable (content) ->
+  div style: "margin-bottom: 1em", content
+
+invitationLabel = renderable (text) ->
+  small ".text-muted", text
+
+invitationValue = renderable (text) ->
+  br()
+  strong text
+
+editButton = renderable (id, opts = {}) ->
+  button "#{id}.btn.btn-link.btn-xs", opts, ->
+    span ".glyphicon.glyphicon-pencil"
+
+trashButton = renderable (id, opts = {}) ->
+  button "#{id}.btn.btn-link.btn-xs", opts, ->
+    span ".glyphicon.glyphicon-trash"
+
+defaultInput = renderable (id, opts = {}) ->
+  input "#{id}.form-control", _.extend({
+    type: "text",
+    style: "margin-right: 5px;"
+  }, opts)
+
+textInput = defaultInput
+
+phoneInput = renderable (id, opts = {}) ->
+  defaultInput id, _.extend(opts, type: "phone")
+
+emailInput = renderable (id, opts = {}) ->
+  defaultInput id, _.extend(opts, type: "email")
+
 editInvitationView = renderable (editor) ->
   panel (if editor.isNewInvitation then "Nueva invitación" else "Editar invitación"), ->
     panelBody ->
-      if editor.isEditingTitle
-        form "#addInvitationTitle", ->
-          div ".form-group", style: "margin-right: 10px;", ->
-            label for: "invitationTitle", "Título de la invitación"
-            input "#invitationTitle.form-control",
-              type: "text",
-              style: "max-width: 300px",
-              value: editor.title,
-              placeholder: "Familia Perez"
-          button ".btn.btn-default", ype: "submit", "Agregar"
-      else
-        small ".text-muted", "Título de la invitación"
-        br()
-        strong editor.title
-        button "#editInvitationTitle.btn.btn-link.btn-xs", ->
-          span ".glyphicon.glyphicon-pencil"
-        br()
-        br()
-        small ".text-muted", "Invitados"
-        br()
-        ul style: "padding-left: 1.5em", ->
-          for guest in editor.guests
-            li style: "padding: 5px 0;", ->
-              if guest.isEditing
-                form "#updateGuest.form-inline", "data-id": guest.id, style: "margin-bottom: 5px", ->
-                  div ".form-group", ->
-                    input "#guest_#{guest.id}_name.form-control",
-                      type: "text",
-                      style: "max-width: 300px; margin-right: 5px;",
-                      value: guest.name,
-                      placeholder: "Juan Perez"
-                  button ".btn.btn-default", type: "submit", "Actualizar"
-              else
-                text guest.name
-                button "#editInvitationGuest.btn.btn-link.btn-xs", "data-id": guest.id, ->
-                  span ".glyphicon.glyphicon-pencil"
-                button "#deleteInvitationGuest.btn.btn-link.btn-xs", "data-id": guest.id, ->
-                  span ".glyphicon.glyphicon-trash"
-          li ->
-            form "#addGuest.form-inline", ->
-              div ".form-group", ->
-                input "#name.form-control",
-                  type: "text",
-                  style: "max-width: 300px; margin-right: 5px;",
-                  placeholder: "Juan Perez"
-              button ".btn.btn-default", type: "submit", "Agregar"
-    if editor.guests.length and not editor.isEditingTitle
+      invitationField ->
+        invitationLabel "Título de la invitación"
+        if editor.isEditingTitle
+          form "#addInvitationTitle.form-inline", ->
+            textInput "#invitationTitle", value: editor.title, placeholder: "Familia Perez"
+            button ".btn.btn-default", type: "submit", "Agregar"
+        else
+          editButton "#editInvitationTitle"
+          invitationValue editor.title
+
+      unless editor.isEditingTitle
+        invitationField ->
+          invitationLabel "Invitados"
+          ul style: "padding-top: 5px; padding-left: 1.5em", ->
+            for guest in editor.guests
+              li style: "padding: 5px 0;", ->
+                if guest.isEditing
+                  form "#updateGuest.form-inline", "data-id": guest.id, style: "margin-bottom: 5px", ->
+                    textInput "#guest_#{guest.id}_name", value: guest.name, placeholder: "Juan Perez"
+                    button ".btn.btn-default", type: "submit", "Actualizar"
+                else
+                  text guest.name
+                  editButton "#editInvitationGuest", "data-id": guest.id
+                  trashButton "#deleteInvitationGuest", "data-id": guest.id
+            li ->
+              form "#addGuest.form-inline", ->
+                textInput "#name", placeholder: "Juan Perez"
+                button ".btn.btn-default", type: "submit", "Agregar"
+
+        invitationField ->
+          invitationLabel "Teléfono"
+          if editor.isEditingPhone
+            form "#updatePhone.form-inline", style: "margin-bottom: 5px", ->
+              phoneInput "#phone", value: editor.phone
+              button ".btn.btn-default", type: "submit", "Actualizar"
+          else
+            editButton "#editInvitationPhone"
+            invitationValue editor.phone
+
+        invitationField ->
+          invitationLabel "Correo electrónico"
+          if editor.isEditingEmail
+            form "#updateEmail.form-inline", style: "margin-bottom: 5px", ->
+              emailInput "#email", value: editor.email
+              button ".btn.btn-default", type: "submit", "Actualizar"
+          else
+            editButton "#editInvitationEmail"
+            invitationValue editor.email
+
+    unless editor.isEditingTitle
       panelFooter ->
         button "#commitInvitation.btn.btn-primary", "Guardar invitación"
 
@@ -72,6 +107,8 @@ invitationsView = renderable (list) ->
         tr ->
           th "Título"
           th "Invitados (#{list.totalGuests()})"
+          th "Teléfono"
+          th "Email"
           th()
       tbody ->
         for invitation in list.invitations
@@ -80,11 +117,11 @@ invitationsView = renderable (list) ->
             td ->
               text "(#{invitation.guests.length}) - "
               text  _.map(invitation.guests, (guest) -> guest.name).join ", "
+            td invitation.phone
+            td invitation.email
             td ".text-right", ->
-              button "#editInvitation.btn.btn-link.btn-xs", "data-id": invitation.id, ->
-                span ".glyphicon.glyphicon-pencil"
-              button "#deleteInvitation.btn.btn-link.btn-xs", "data-id": invitation.id, ->
-                span ".glyphicon.glyphicon-trash"
+              editButton "#editInvitation", "data-id": invitation.id
+              trashButton "#deleteInvitation", "data-id": invitation.id
 
 view = renderable (data) ->
   div ".row", ->
@@ -148,6 +185,22 @@ onAction "click", "#deleteInvitationGuest", ($el) ->
 onAction "submit", "#updateGuest", ($form) ->
   id = $form.data("id")
   app.editor.updateGuest(id, name: $form.find("#guest_#{id}_name").val())
+  $("#name").focus()
+
+onAction "click", "#editInvitationPhone", ->
+  app.editor.turnOnPhoneEdition()
+  $("#phone").focus()
+
+onAction "submit", "#updatePhone", ($form) ->
+  app.editor.updatePhone($form.find("#phone").val())
+  $("#name").focus()
+
+onAction "click", "#editInvitationEmail", ->
+  app.editor.turnOnEmailEdition()
+  $("#email").focus()
+
+onAction "submit", "#updateEmail", ($form) ->
+  app.editor.updateEmail($form.find("#email").val())
   $("#name").focus()
 
 onAction "click", "#editInvitation", ($el) ->
