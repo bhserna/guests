@@ -71,15 +71,15 @@ invitationsView = renderable (list) ->
       thead ->
         tr ->
           th "Título"
-          th "Invitados"
-          th "Total de invitados (#{list.totalGuests()})"
+          th "Invitados (#{list.totalGuests()})"
           th()
       tbody ->
         for invitation in list.invitations
           tr ->
             td invitation.title
-            td _.map(invitation.guests, (guest) -> guest.name).join ", "
-            td invitation.guests.length
+            td ->
+              text "(#{invitation.guests.length}) - "
+              text  _.map(invitation.guests, (guest) -> guest.name).join ", "
             td ".text-right", ->
               button "#editInvitation.btn.btn-link.btn-xs", "data-id": invitation.id, ->
                 span ".glyphicon.glyphicon-pencil"
