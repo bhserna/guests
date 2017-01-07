@@ -13,7 +13,7 @@ panelFooter = renderable (content) ->
   div ".panel-footer", content
 
 editInvitationView = renderable (editor) ->
-  panel (if editor.isAddingInvitation then "Nueva invitación" else "Editar invitación"), ->
+  panel (if editor.isNewInvitation then "Nueva invitación" else "Editar invitación"), ->
     panelBody ->
       if editor.isEditingTitle
         form "#addInvitationTitle", ->
@@ -79,66 +79,72 @@ invitationsView = renderable (list) ->
               button "#editInvitation.btn.btn-link.btn-xs", "data-id": invitation.id, ->
                 text "Editar"
 
-view = renderable (editor, list) ->
+view = renderable (data) ->
   div ".row", ->
     div ".col-md-4", ->
-      editInvitationView(editor)
+      editInvitationView(data.editor)
     div ".col-md-8", ->
-      invitationsView(list)
+      invitationsView(data.list)
+
+class Page
+  constructor: ->
+    @editor = null
+    @list = null
+
+  renderEditor: (data) ->
+    @editor = data
+    @render()
+
+  renderList: (data) ->
+    @list = data
+    @render()
+
+  render: ->
+    if @editor and @list
+      $("#app").html(view(@))
 
 $ ->
-  window.app = new GuestsApp(LocalStore)
-  list = app.invitationsList
-  editor = app.invitationEditor
-  render = (app) -> $("#app").html(view(editor, list))
-  render()
-
+  page = new Page
+  window.app = new GuestsApp(LocalStore, page)
   $("#invitationTitle").focus()
 
   $(document).on "submit", "#addInvitationTitle", (e) ->
     e.preventDefault()
     $form = $(this)
-    editor.addTitle($form.find("#invitationTitle").val())
-    render()
+    app.editor.addTitle($form.find("#invitationTitle").val())
     $("#name").focus()
 
   $(document).on "submit", "#addGuest", (e) ->
     e.preventDefault()
     $form = $(this)
-    editor.addGuest(name: $form.find("#name").val())
-    render()
+    app.editor.addGuest(name: $form.find("#name").val())
     $("#name").focus()
 
   $(document).on "click", "#commitInvitation", (e) ->
     e.preventDefault()
-    editor.commit()
-    render()
+    app.editor.commit()
     $("#invitationTitle").focus()
 
   $(document).on "click", "#editInvitationTitle", (e) ->
     e.preventDefault()
-    editor.turnOnTitleEdition()
-    render()
+    app.editor.turnOnTitleEdition()
     $("#invitationTitle").focus()
 
   $(document).on "click", "#editInvitationGuest", (e) ->
     e.preventDefault()
     id = $(this).data("id")
-    editor.turnOnGuestEdition(id)
-    render()
+    app.editor.turnOnGuestEdition(id)
     $("#guest_#{id}_name").focus()
 
   $(document).on "submit", "#updateGuest", (e) ->
     e.preventDefault()
     $form = $(this)
     id = $form.data("id")
-    editor.updateGuest(id, name: $form.find("#guest_#{id}_name").val())
-    render()
+    app.editor.updateGuest(id, name: $form.find("#guest_#{id}_name").val())
     $("#name").focus()
 
   $(document).on "click", "#editInvitation", (e) ->
     e.preventDefault()
     id = $(this).data("id")
     app.editInvitationWithId(id)
-    render()
     $("#name").focus()

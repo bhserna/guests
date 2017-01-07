@@ -9,7 +9,8 @@ class EditableInvitation
     @id = opts.id
     @title = opts.title or ""
     @guests = (new EditableGuest(guest) for guest in (opts.guests or []))
-    @turnOnTitleEdition()
+    @isNewInvitation = !@id
+    @turnOnTitleEdition() unless @title
 
   addTitle: (title) ->
     @title = title
@@ -47,93 +48,102 @@ class EditableGuest extends Guest
   turnOffEditionMode: ->
     @isEditing = false
 
+class InvitationsList
+  constructor: (@invitations) ->
+
+  findInvitation: (id) ->
+    _.findWhere(@invitations, id: id)
+
+  addInvitation: (invitation) ->
+    invitation.id = @invitations.length + 1
+    invitation = @buildInvitation(invitation)
+    @invitations.push(invitation)
+
+  updateInvitation: (invitation) ->
+    byId = _.indexBy(@invitations, "id")
+    byId[invitation.id] = @buildInvitation(invitation)
+    @invitations = _.values(byId)
+
+  buildInvitation: ({id, title, guests}) ->
+    guests = (new Guest(guest) for guest in guests)
+    invitation = new Invitation(id: id, title: title, guests: guests)
+
 class window.GuestsApp
   constructor: (@store, @display) ->
-    @list = new InvitationsList(@store, @display)
+    @list = new InvitationsListControl(@store, @display)
     @addInvitation()
 
   addInvitation: ->
-    invitation = new EditableInvitation
-    @editor = new NewInvitationControl(invitation, @, @display)
-
-  commitAddition: (invitation) ->
-    @list.addInvitation(invitation.title, invitation.guests)
-    @addInvitation()
+    @editor = new NewInvitationControl(new EditableInvitation, @, @display)
 
   editInvitationWithId: (id) ->
     invitation = new EditableInvitation(@list.findInvitation(id))
     @editor = new EditInvitationControl(invitation, @, @display)
 
-  commitEdition: (invitation)->
-    @list.updateInvitation(invitation.id, invitation.title, invitation.guests)
+  commitAddition: (invitation) ->
+    @list.addInvitation(invitation)
     @addInvitation()
 
-class InvitationsList
+  commitEdition: (invitation)->
+    @list.updateInvitation(invitation)
+    @addInvitation()
+
+class InvitationsListControl
   constructor: (@store, @display) ->
     @invitations = @store.fetchRecords()
-    @display.renderList(@)
+    @list = new InvitationsList(@invitations)
+    @updateDisplay()
+
+  updateDisplay: ->
+    @display.renderList(@list)
+
+  updateStore: ->
+    @store.updateRecords(@list.invitations)
 
   findInvitation: (id) ->
-    _.findWhere(@invitations, id: id)
+    @list.findInvitation(id)
 
   addInvitation: (title, guests) ->
-    id = @invitations.length + 1
-    invitation = @_buildInvitation(id, title, guests)
-    @invitations.push(invitation)
-    @store.updateRecords(@invitations)
-    @display.renderList(@)
+    @list.addInvitation(title, guests)
+    @updateStore()
+    @updateDisplay()
 
   updateInvitation: (id, title, guests) ->
-    invitation = @_buildInvitation(id, title, guests)
-    @invitations = _.reject(@invitations, (invitation) -> invitation.id is id)
-    @invitations.push(invitation)
-    @invitations = _.sortBy(@invitations, "id")
-    @store.updateRecords(@invitations)
-    @display.renderList(@)
-
-  _buildInvitation: (id, title, guests) ->
-    guests = (new Guest(guest) for guest in guests)
-    invitation = new Invitation(id: id, title: title, guests: guests)
+    @list.updateInvitation(id, title, guests)
+    @updateStore()
+    @updateDisplay()
 
 class EditInvitationControl
-  isAddingInvitation: false
-  isEditingInvitation: true
-
   constructor: (@invitation, @app, @display) ->
-    @render()
+    @updateDisplay()
 
-  render: ->
-    state = _.extend(
-      _.pick(@invitation, "title", "isEditingTitle", "guests"),
-      _.pick(@, "isAddingInvitation", "isEditingInvitation"))
-    @display.renderEditor(state)
+  updateDisplay: ->
+    @display.renderEditor(@invitation)
 
   addTitle: (title) ->
     @invitation.addTitle(title)
-    @render()
+    @updateDisplay()
 
   turnOnTitleEdition: ->
     @invitation.turnOnTitleEdition()
-    @render()
+    @updateDisplay()
 
   addGuest: (attrs) ->
     @invitation.addGuest(attrs)
-    @render()
+    @updateDisplay()
 
   turnOnGuestEdition: (id) ->
     @invitation.turnOnGuestEdition(id)
-    @render()
+    @updateDisplay()
 
   updateGuest: (id, attrs) ->
     @invitation.updateGuest(id, attrs)
-    @render()
+    @updateDisplay()
 
   commit: ->
     @app.commitEdition(@invitation)
 
 class NewInvitationControl extends EditInvitationControl
-  isAddingInvitation: true
-  isEditingInvitation: false
   commit: -> @app.commitAddition(@invitation)
 
 class window.MemoryStore

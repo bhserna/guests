@@ -19,9 +19,8 @@ module "Add guests by invitation", (hooks) ->
     @app = new GuestsApp(store, @page)
     @editor = @app.addInvitation()
 
-  test "editor is adding invitation", (assert) ->
-    assert.ok @page.editor.isAddingInvitation
-    assert.notOk @page.editor.isEditingInvitation
+  test "knows is a new invitation", (assert) ->
+    assert.ok @page.editor.isNewInvitation
 
   test "on init is clean", (assert) ->
     assert.equal @page.editor.title, ""
@@ -105,15 +104,15 @@ module "Edit invitation", (hooks) ->
     @app = new GuestsApp(store, @page)
     addInvitation(@app, "Inv 1", ["guest1", "guest2"])
 
-  test "is not active by default", (assert) ->
-    assert.ok @page.editor.isAddingInvitation
-    assert.notOk @page.editor.isEditingInvitation
-
-  test "it can be activated for an invitation", (assert) ->
+  test "knows is not a new invitation", (assert) ->
     invitation = first @page.list.invitations
     @app.editInvitationWithId(invitation.id)
-    assert.notOk @page.editor.isAddingInvitation
-    assert.ok @page.editor.isEditingInvitation
+    assert.notOk @page.editor.isNewInvitation
+
+  test "it start with the title in non edition mode", (assert) ->
+    invitation = first @page.list.invitations
+    @app.editInvitationWithId(invitation.id)
+    assert.notOk @page.editor.isEditingTitle
 
   test "it has the information of the invitation to edit", (assert) ->
     invitation = first @page.list.invitations
@@ -140,8 +139,7 @@ module "Edit invitation", (hooks) ->
     invitation = first @page.list.invitations
     @app.editInvitationWithId(invitation.id)
     @app.editor.commit()
-    assert.ok @page.editor.isAddingInvitation
-    assert.notOk @page.editor.isEditingInvitation
+    assert.ok @page.editor.isNewInvitation
 
   test "after commits the editor is cleaned", (assert) ->
     invitation = first @page.list.invitations
