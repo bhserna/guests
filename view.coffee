@@ -103,48 +103,44 @@ class Page
     if @editor and @list
       $("#app").html(view(@))
 
-$ ->
-  page = new Page
-  window.app = new GuestsApp(LocalStore, page)
+onAction = (event, selector, callback) ->
+  $(document).on event, selector, (e) ->
+    e.preventDefault()
+    callback($el = $(this))
+
+page = new Page
+app = new GuestsApp(LocalStore, page)
+
+$ -> $("#invitationTitle").focus()
+
+onAction "submit", "#addInvitationTitle", ($form) ->
+  console.log app
+  app.editor.addTitle($form.find("#invitationTitle").val())
+  $("#name").focus()
+
+onAction "submit", "#addGuest", ($form) ->
+  app.editor.addGuest(name: $form.find("#name").val())
+  $("#name").focus()
+
+onAction "click", "#commitInvitation", ->
+  app.editor.commit()
   $("#invitationTitle").focus()
 
-  $(document).on "submit", "#addInvitationTitle", (e) ->
-    e.preventDefault()
-    $form = $(this)
-    app.editor.addTitle($form.find("#invitationTitle").val())
-    $("#name").focus()
+onAction "click", "#editInvitationTitle", ->
+  app.editor.turnOnTitleEdition()
+  $("#invitationTitle").focus()
 
-  $(document).on "submit", "#addGuest", (e) ->
-    e.preventDefault()
-    $form = $(this)
-    app.editor.addGuest(name: $form.find("#name").val())
-    $("#name").focus()
+onAction "click", "#editInvitationGuest", ($el) ->
+  id = $el.data("id")
+  app.editor.turnOnGuestEdition(id)
+  $("#guest_#{id}_name").focus()
 
-  $(document).on "click", "#commitInvitation", (e) ->
-    e.preventDefault()
-    app.editor.commit()
-    $("#invitationTitle").focus()
+onAction "submit", "#updateGuest", ($form) ->
+  id = $form.data("id")
+  app.editor.updateGuest(id, name: $form.find("#guest_#{id}_name").val())
+  $("#name").focus()
 
-  $(document).on "click", "#editInvitationTitle", (e) ->
-    e.preventDefault()
-    app.editor.turnOnTitleEdition()
-    $("#invitationTitle").focus()
-
-  $(document).on "click", "#editInvitationGuest", (e) ->
-    e.preventDefault()
-    id = $(this).data("id")
-    app.editor.turnOnGuestEdition(id)
-    $("#guest_#{id}_name").focus()
-
-  $(document).on "submit", "#updateGuest", (e) ->
-    e.preventDefault()
-    $form = $(this)
-    id = $form.data("id")
-    app.editor.updateGuest(id, name: $form.find("#guest_#{id}_name").val())
-    $("#name").focus()
-
-  $(document).on "click", "#editInvitation", (e) ->
-    e.preventDefault()
-    id = $(this).data("id")
-    app.editInvitationWithId(id)
-    $("#name").focus()
+onAction "click", "#editInvitation", ($el) ->
+  id = $el.data("id")
+  app.editInvitationWithId(id)
+  $("#name").focus()
