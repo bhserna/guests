@@ -12,6 +12,12 @@ class TestDisplay
   renderList: (data) ->
     @list = data
 
+addInvitation = (app, title, guests) ->
+  app.addInvitation()
+  app.editor.addTitle(title)
+  app.editor.addGuest(name: guest) for guest in guests
+  app.editor.commit()
+
 module "Add guests by invitation", (hooks) ->
   hooks.beforeEach ->
     store = new MemoryStore
@@ -100,12 +106,6 @@ module "Add guests by invitation", (hooks) ->
     assert.equal @page.editor.guests.length, 0
 
 module "Edit invitation", (hooks) ->
-  addInvitation = (app, title, guests) ->
-    app.addInvitation()
-    app.editor.addTitle(title)
-    app.editor.addGuest(name: guest) for guest in guests
-    app.editor.commit()
-
   hooks.beforeEach ->
     store = new MemoryStore
     @page = new TestDisplay
@@ -157,12 +157,6 @@ module "Edit invitation", (hooks) ->
     assert.equal @page.editor.guests.length, 0
 
 module "Delete invitation", (hooks) ->
-  addInvitation = (app, title, guests) ->
-    app.addInvitation()
-    app.editor.addTitle(title)
-    app.editor.addGuest(name: guest) for guest in guests
-    app.editor.commit()
-
   hooks.beforeEach ->
     store = new MemoryStore
     @page = new TestDisplay
@@ -173,3 +167,32 @@ module "Delete invitation", (hooks) ->
     invitation = first @page.list.invitations
     @app.list.deleteInvitation(invitation.id)
     assert.equal @page.list.invitations.length, 0
+
+module "Show invitations list", (hooks) ->
+  hooks.beforeEach ->
+    store = new MemoryStore
+    @page = new TestDisplay
+    @app = new GuestsApp(store, @page)
+    addInvitation(@app, "Inv 1", ["guest1", "guest2"])
+    addInvitation(@app, "Inv 2", ["guest1", "guest2", "guest3"])
+    addInvitation(@app, "Inv 3", ["guest1"])
+
+  test "show title", (assert) ->
+    invitation = first @page.list.invitations
+    assert.equal invitation.title, "Inv 1"
+
+  test "has the guests names", (assert) ->
+    invitation = first @page.list.invitations
+    guests = invitation.guests
+    assert.equal first(guests).name, "guest1"
+    assert.equal second(guests).name, "guest2"
+
+  test "has the guests count", (assert) ->
+    invitation = first @page.list.invitations
+    assert.equal invitation.guests.length, 2
+
+  test "has the total invitations count", (assert) ->
+    assert.equal @page.list.invitations.length, 3
+
+  test "has the total guests", (assert) ->
+    assert.equal @page.list.totalGuests(), 6

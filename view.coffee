@@ -66,18 +66,20 @@ editInvitationView = renderable (editor) ->
         button "#commitInvitation.btn.btn-primary", "Guardar invitación"
 
 invitationsView = renderable (list) ->
-  panel "Lista de invitaciones", ->
+  panel "Lista de invitaciones (#{list.invitations.length})", ->
     table ".table", ->
       thead ->
         tr ->
           th "Título"
           th "Invitados"
+          th "Total de invitados (#{list.totalGuests()})"
           th()
       tbody ->
         for invitation in list.invitations
           tr ->
             td invitation.title
             td _.map(invitation.guests, (guest) -> guest.name).join ", "
+            td invitation.guests.length
             td ".text-right", ->
               button "#editInvitation.btn.btn-link.btn-xs", "data-id": invitation.id, ->
                 span ".glyphicon.glyphicon-pencil"

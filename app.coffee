@@ -70,6 +70,11 @@ class InvitationsList
   deleteInvitation: (id) ->
     @invitations = _.reject(@invitations, (invitation) -> invitation.id is id)
 
+  totalGuests: ->
+    _.chain(@invitations).
+    map((invitation) -> invitation.guests.length).
+    reduce((acc, count) -> acc + count)
+
   buildInvitation: ({id, title, guests}) ->
     guests = (new Guest(guest) for guest in guests)
     invitation = new Invitation(id: id, title: title, guests: guests)
