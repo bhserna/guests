@@ -1,4 +1,4 @@
-{renderable, div, h3, text, button, br, form, input, label, small, strong, ul, li, table, thead, tbody, tr, th, td, raw} = teacup
+{renderable, span, div, h3, text, button, br, form, input, label, small, strong, ul, li, table, thead, tbody, tr, th, td, raw} = teacup
 
 panel = renderable (title, content) ->
   div ".panel.panel-default", style: "margin-top: 10px", ->
@@ -29,14 +29,15 @@ editInvitationView = renderable (editor) ->
         small ".text-muted", "Título de la invitación"
         br()
         strong editor.title
-        button "#editInvitationTitle.btn.btn-link.btn-sm", "Editar"
+        button "#editInvitationTitle.btn.btn-link.btn-xs", ->
+          span ".glyphicon.glyphicon-pencil"
         br()
         br()
         small ".text-muted", "Invitados"
         br()
         ul style: "padding-left: 1.5em", ->
           for guest in editor.guests
-            li ->
+            li style: "padding: 5px 0;", ->
               if guest.isEditing
                 form "#updateGuest.form-inline", "data-id": guest.id, style: "margin-bottom: 5px", ->
                   div ".form-group", ->
@@ -48,8 +49,10 @@ editInvitationView = renderable (editor) ->
                   button ".btn.btn-default", type: "submit", "Actualizar"
               else
                 text guest.name
-                button "#editInvitationGuest.btn.btn-link.btn-sm", "data-id": guest.id, ->
-                  text "Editar"
+                button "#editInvitationGuest.btn.btn-link.btn-xs", "data-id": guest.id, ->
+                  span ".glyphicon.glyphicon-pencil"
+                button "#deleteInvitationGuest.btn.btn-link.btn-xs", "data-id": guest.id, ->
+                  span ".glyphicon.glyphicon-trash"
           li ->
             form "#addGuest.form-inline", ->
               div ".form-group", ->
@@ -134,6 +137,11 @@ onAction "click", "#editInvitationGuest", ($el) ->
   id = $el.data("id")
   app.editor.turnOnGuestEdition(id)
   $("#guest_#{id}_name").focus()
+
+onAction "click", "#deleteInvitationGuest", ($el) ->
+  id = $el.data("id")
+  app.editor.deleteGuest(id)
+  $("#name").focus()
 
 onAction "submit", "#updateGuest", ($form) ->
   id = $form.data("id")

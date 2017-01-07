@@ -33,6 +33,9 @@ class EditableInvitation
     guest.setName(attrs.name)
     guest.turnOffEditionMode()
 
+  deleteGuest: (id) ->
+    @guests = (guest for guest in @guests when guest.id isnt id)
+
   findGuest: (id) ->
     (guest for guest in @guests when guest.id is id)[0]
 
@@ -138,6 +141,10 @@ class EditInvitationControl
 
   updateGuest: (id, attrs) ->
     @invitation.updateGuest(id, attrs)
+    @updateDisplay()
+
+  deleteGuest: (id) ->
+    @invitation.deleteGuest(id)
     @updateDisplay()
 
   commit: ->

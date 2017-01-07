@@ -64,6 +64,14 @@ module "Add guests by invitation", (hooks) ->
     @app.editor.updateGuest(getGuest().id, name: "Benito Serna")
     assert.equal getGuest().name, "Benito Serna"
 
+  test "delete guest from the current list", (assert) ->
+    @app.editor.addTitle("Serna Moreno")
+    @app.editor.addGuest(name: "Benito")
+    getGuest = => first(@page.editor.guests)
+
+    @app.editor.deleteGuest(getGuest().id)
+    assert.equal @page.editor.guests.length, 0
+
   test "add more than one guests to the current list", (assert) ->
     @app.editor.addTitle("Serna Moreno")
     @app.editor.addGuest(name: "Benito Serna")
