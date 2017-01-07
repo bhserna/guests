@@ -67,21 +67,23 @@ class InvitationsList
     byId[invitation.id] = @buildInvitation(invitation)
     @invitations = _.values(byId)
 
+  deleteInvitation: (id) ->
+    @invitations = _.reject(@invitations, (invitation) -> invitation.id is id)
+
   buildInvitation: ({id, title, guests}) ->
     guests = (new Guest(guest) for guest in guests)
     invitation = new Invitation(id: id, title: title, guests: guests)
 
 class window.GuestsApp
   constructor: (@store, @display) ->
-    @list = new InvitationsListControl(@store, @display)
+    @list = new InvitationsListControl(@, @store, @display)
     @addInvitation()
 
   addInvitation: ->
     @editor = new NewInvitationControl(new EditableInvitation, @, @display)
 
-  editInvitationWithId: (id) ->
-    invitation = new EditableInvitation(@list.findInvitation(id))
-    @editor = new EditInvitationControl(invitation, @, @display)
+  editInvitation: (invitation) ->
+    @editor = new EditInvitationControl(new EditableInvitation(invitation), @, @display)
 
   commitAddition: (invitation) ->
     @list.addInvitation(invitation)
@@ -92,7 +94,7 @@ class window.GuestsApp
     @addInvitation()
 
 class InvitationsListControl
-  constructor: (@store, @display) ->
+  constructor: (@app, @store, @display) ->
     @invitations = @store.fetchRecords()
     @list = new InvitationsList(@invitations)
     @updateDisplay()
@@ -106,10 +108,18 @@ class InvitationsListControl
   findInvitation: (id) ->
     @list.findInvitation(id)
 
+  deleteInvitation: (id) ->
+    @list.deleteInvitation(id)
+    @updateStore()
+    @updateDisplay()
+
   addInvitation: (title, guests) ->
     @list.addInvitation(title, guests)
     @updateStore()
     @updateDisplay()
+
+  editInvitation: (id) ->
+    @app.editInvitation(@findInvitation(id))
 
   updateInvitation: (id, title, guests) ->
     @list.updateInvitation(id, title, guests)

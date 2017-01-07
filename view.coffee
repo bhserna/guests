@@ -78,9 +78,11 @@ invitationsView = renderable (list) ->
           tr ->
             td invitation.title
             td _.map(invitation.guests, (guest) -> guest.name).join ", "
-            td ->
+            td ".text-right", ->
               button "#editInvitation.btn.btn-link.btn-xs", "data-id": invitation.id, ->
-                text "Editar"
+                span ".glyphicon.glyphicon-pencil"
+              button "#deleteInvitation.btn.btn-link.btn-xs", "data-id": invitation.id, ->
+                span ".glyphicon.glyphicon-trash"
 
 view = renderable (data) ->
   div ".row", ->
@@ -150,5 +152,11 @@ onAction "submit", "#updateGuest", ($form) ->
 
 onAction "click", "#editInvitation", ($el) ->
   id = $el.data("id")
-  app.editInvitationWithId(id)
+  app.list.editInvitation(id)
   $("#name").focus()
+
+onAction "click", "#deleteInvitation", ($el) ->
+  if confirm "¿Seguro que deseas eliminar la invitación?"
+    id = $el.data("id")
+    app.list.deleteInvitation(id)
+    $("#name").focus()

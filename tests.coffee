@@ -114,24 +114,24 @@ module "Edit invitation", (hooks) ->
 
   test "knows is not a new invitation", (assert) ->
     invitation = first @page.list.invitations
-    @app.editInvitationWithId(invitation.id)
+    @app.list.editInvitation(invitation.id)
     assert.notOk @page.editor.isNewInvitation
 
   test "it start with the title in non edition mode", (assert) ->
     invitation = first @page.list.invitations
-    @app.editInvitationWithId(invitation.id)
+    @app.list.editInvitation(invitation.id)
     assert.notOk @page.editor.isEditingTitle
 
   test "it has the information of the invitation to edit", (assert) ->
     invitation = first @page.list.invitations
-    @app.editInvitationWithId(invitation.id)
+    @app.list.editInvitation(invitation.id)
     assert.equal @page.editor.title, "Inv 1"
     assert.equal first(@page.editor.guests).name, "guest1"
     assert.equal second(@page.editor.guests).name, "guest2"
 
   test "after commit it updates the invitation", (assert) ->
     invitation = first @page.list.invitations
-    @app.editInvitationWithId(invitation.id)
+    @app.list.editInvitation(invitation.id)
     @app.editor.addTitle("Serna Moreno")
     @app.editor.updateGuest(first(@page.editor.guests).id, name: "Benito Serna")
     @app.editor.updateGuest(second(@page.editor.guests).id, name: "Maripaz Moreno")
@@ -145,13 +145,31 @@ module "Edit invitation", (hooks) ->
 
   test "after commit it returns to adding invitation mode", (assert) ->
     invitation = first @page.list.invitations
-    @app.editInvitationWithId(invitation.id)
+    @app.list.editInvitation(invitation.id)
     @app.editor.commit()
     assert.ok @page.editor.isNewInvitation
 
   test "after commits the editor is cleaned", (assert) ->
     invitation = first @page.list.invitations
-    @app.editInvitationWithId(invitation.id)
+    @app.list.editInvitation(invitation.id)
     @app.editor.commit()
     assert.equal @page.editor.title, ""
     assert.equal @page.editor.guests.length, 0
+
+module "Delete invitation", (hooks) ->
+  addInvitation = (app, title, guests) ->
+    app.addInvitation()
+    app.editor.addTitle(title)
+    app.editor.addGuest(name: guest) for guest in guests
+    app.editor.commit()
+
+  hooks.beforeEach ->
+    store = new MemoryStore
+    @page = new TestDisplay
+    @app = new GuestsApp(store, @page)
+    addInvitation(@app, "Inv 1", ["guest1", "guest2"])
+
+  test "removes the invitation", (assert) ->
+    invitation = first @page.list.invitations
+    @app.list.deleteInvitation(invitation.id)
+    assert.equal @page.list.invitations.length, 0
