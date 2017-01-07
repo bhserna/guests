@@ -115,13 +115,11 @@ onAction = (event, selector, callback) ->
     e.preventDefault()
     callback($el = $(this))
 
-page = new Page
-app = new GuestsApp(LocalStore, page)
+app = new GuestsApp(LocalStore, new Page)
 
 $ -> $("#invitationTitle").focus()
 
 onAction "submit", "#addInvitationTitle", ($form) ->
-  console.log app
   app.editor.addTitle($form.find("#invitationTitle").val())
   $("#name").focus()
 
