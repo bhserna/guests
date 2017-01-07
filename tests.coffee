@@ -248,3 +248,15 @@ module "Show invitations list", (hooks) ->
 
   test "has the total guests", (assert) ->
     assert.equal @page.list.totalGuests(), 6
+
+    invitation = first @page.list.invitations
+    @app.list.deleteInvitation(invitation.id)
+    assert.equal @page.list.totalGuests(), 4
+
+    invitation = first @page.list.invitations
+    @app.list.deleteInvitation(invitation.id)
+    assert.equal @page.list.totalGuests(), 1
+
+    invitation = first @page.list.invitations
+    @app.list.deleteInvitation(invitation.id)
+    assert.equal @page.list.totalGuests(), 0

@@ -90,7 +90,8 @@ class InvitationsList
   totalGuests: ->
     _.chain(@invitations).
     map((invitation) -> invitation.guests.length).
-    reduce((acc, count) -> acc + count)
+    reduce((acc, count) -> acc + count).
+    value() or 0
 
   buildInvitation: (attrs) ->
     attrs.guests = (new Guest(guest) for guest in attrs.guests)
