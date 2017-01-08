@@ -1,4 +1,4 @@
-{renderable, span, div, h3, text, button, br, form, input, label, small, strong, ul, li, table, thead, tbody, tr, th, td, raw} = teacup
+{renderable, a, span, div, h3, text, button, br, form, input, label, small, strong, ul, li, table, thead, tbody, tr, th, td, raw} = teacup
 
 panel = renderable (title, content) ->
   div ".panel.panel-default", style: "margin-top: 10px", ->
@@ -29,6 +29,10 @@ editButton = renderable (id, opts = {}) ->
 trashButton = renderable (id, opts = {}) ->
   button "#{id}.btn.btn-link.btn-xs", opts, ->
     span ".glyphicon.glyphicon-trash"
+
+undoButton = renderable (id, opts = {}) ->
+  button "#{id}.btn.btn-link.btn-xs", opts, ->
+    span ".fa.fa-undo"
 
 defaultInput = renderable (id, opts = {}) ->
   input "#{id}.form-control", _.extend({
@@ -109,6 +113,7 @@ invitationsView = renderable (list) ->
           th "Invitados (#{list.totalGuests()})"
           th "Teléfono"
           th "Email"
+          th ".text-center", "¿Entregada? (#{list.totalDeliveredInvitations()})"
           th()
       tbody ->
         for invitation in list.invitations
@@ -119,6 +124,13 @@ invitationsView = renderable (list) ->
               text  _.map(invitation.guests, (guest) -> guest.name).join ", "
             td invitation.phone
             td invitation.email
+            td ".text-center", ->
+              if invitation.isDelivered
+                span "Sí "
+                undoButton "#unconfirmInvitationDelivery", "data-id": invitation.id
+              else
+                button "#confirmInvitationDelivery.btn.btn-default.btn-sm", "data-id": invitation.id, ->
+                  text "Confirmar entrega"
             td ".text-right", ->
               editButton "#editInvitation", "data-id": invitation.id
               trashButton "#deleteInvitation", "data-id": invitation.id
@@ -213,3 +225,11 @@ onAction "click", "#deleteInvitation", ($el) ->
     id = $el.data("id")
     app.list.deleteInvitation(id)
     $("#name").focus()
+
+onAction "click", "#confirmInvitationDelivery", ($el) ->
+  id = $el.data("id")
+  app.list.confirmInvitationDelivery(id)
+
+onAction "click", "#unconfirmInvitationDelivery", ($el) ->
+  id = $el.data("id")
+  app.list.unconfirmInvitationDelivery(id)

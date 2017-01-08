@@ -2,9 +2,9 @@ class Guest
   constructor: ({@id, @name})->
 
 class Invitation
-  constructor: ({@id, @title, @guests, @phone, @email})->
+  constructor: ({@id, @title, @guests, @phone, @email, @isDelivered})->
 
-class EditableInvitation
+class EditableInvitation extends Invitation
   constructor: (opts = {}) ->
     @id = opts.id
     @title = opts.title or ""
@@ -68,6 +68,13 @@ class EditableGuest extends Guest
   turnOffEditionMode: ->
     @isEditing = false
 
+class DeliverableInvitation extends Invitation
+  confirmDelivery: ->
+    @isDelivered = true
+
+  unconfirmDelivery: ->
+    @isDelivered = false
+
 class InvitationsList
   constructor: (@invitations) ->
 
@@ -92,6 +99,19 @@ class InvitationsList
     map((invitation) -> invitation.guests.length).
     reduce((acc, count) -> acc + count).
     value() or 0
+
+  totalDeliveredInvitations: ->
+    _.filter(@invitations, (invitation) -> invitation.isDelivered).length
+
+  confirmInvitationDelivery: (id) ->
+    invitation = new DeliverableInvitation(@findInvitation(id))
+    invitation.confirmDelivery()
+    @updateInvitation(invitation)
+
+  unconfirmInvitationDelivery: (id) ->
+    invitation = new DeliverableInvitation(@findInvitation(id))
+    invitation.unconfirmDelivery()
+    @updateInvitation(invitation)
 
   buildInvitation: (attrs) ->
     attrs.guests = (new Guest(guest) for guest in attrs.guests)
@@ -146,6 +166,16 @@ class InvitationsListControl
 
   updateInvitation: (id, title, guests) ->
     @list.updateInvitation(id, title, guests)
+    @updateStore()
+    @updateDisplay()
+
+  confirmInvitationDelivery: (id) ->
+    @list.confirmInvitationDelivery(id)
+    @updateStore()
+    @updateDisplay()
+
+  unconfirmInvitationDelivery: (id) ->
+    @list.unconfirmInvitationDelivery(id)
     @updateStore()
     @updateDisplay()
 
