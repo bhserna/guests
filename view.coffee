@@ -1,4 +1,4 @@
-{renderable, a, span, div, h3, text, button, br, form, input, label, small, strong, ul, li, table, thead, tbody, tr, th, td, raw} = teacup
+{renderable, a, span, div, h3, h4, text, button, br, form, input, label, small, strong, ul, li, table, thead, tbody, tr, th, td, raw} = teacup
 
 panel = renderable (title, content) ->
   div ".panel.panel-default", style: "margin-top: 10px", ->
@@ -114,6 +114,7 @@ invitationsView = renderable (list) ->
           th "Teléfono"
           th "Email"
           th ".text-center", "¿Entregada? (#{list.totalDeliveredInvitations()})"
+          th ".text-center", "Confirmados (#{list.totalConfirmedGuests()})"
           th()
       tbody ->
         for invitation in list.invitations
@@ -131,9 +132,39 @@ invitationsView = renderable (list) ->
               else
                 button "#confirmInvitationDelivery.btn.btn-default.btn-sm", "data-id": invitation.id, ->
                   text "Confirmar entrega"
+            td ".text-center", ->
+              if invitation.isAssistanceConfirmed
+                text invitation.confirmedGuestsCount
+                editButton "#startInvitationAssistanceConfirmation", "data-id": invitation.id
+              else
+                button "#startInvitationAssistanceConfirmation.btn.btn-default.btn-sm", "data-id": invitation.id, ->
+                  text "Confirmar asistencia"
             td ".text-right", ->
               editButton "#editInvitation", "data-id": invitation.id
               trashButton "#deleteInvitation", "data-id": invitation.id
+
+confirmAssistanceView = renderable (confirmator) ->
+  div ".modal.fade", tabindex: "-1", role: "dialog", ->
+    div ".modal-dialog", ->
+      div ".modal-content", ->
+        div ".modal-header", ->
+          h4 ".modal-title", "Confirmación de asistencia"
+        form "#confirmInvitationGuests.form-inline", style: "margin-bottom: 5px", ->
+          div ".modal-body", ->
+            invitationField ->
+              invitationLabel "Invitación"
+              invitationValue confirmator.title
+            if confirmator.phone
+              invitationField ->
+                invitationLabel "Teléfono"
+                invitationValue confirmator.phone
+            invitationField ->
+              invitationLabel "Número de asistentes"
+              br()
+              textInput "#guests_count", value: confirmator.confirmedGuestsCount
+          div ".modal-footer", ->
+            button "#cancelInvitationConfirmation.btn.btn-default", type: "button", "Cancelar"
+            button ".btn.btn-primary", type: "submit", "Guardar"
 
 view = renderable (data) ->
   div ".row", ->
@@ -154,6 +185,18 @@ class Page
   renderList: (data) ->
     @list = data
     @render()
+
+  renderConfirmator: (data) ->
+    @$confirmatorHtml = $(confirmAssistanceView(data))
+    $("body").append(@$confirmatorHtml)
+    @$confirmatorHtml.on 'shown.bs.modal', ->
+       $("#guests_count").focus()
+    @$confirmatorHtml.modal(backdrop: false, keybord: false)
+
+  removeConfirmator: ->
+    @$confirmatorHtml.modal("hide")
+    @$confirmatorHtml.on 'hidden.bs.modal', =>
+      @$confirmatorHtml.remove()
 
   render: ->
     if @editor and @list
@@ -233,3 +276,13 @@ onAction "click", "#confirmInvitationDelivery", ($el) ->
 onAction "click", "#unconfirmInvitationDelivery", ($el) ->
   id = $el.data("id")
   app.list.unconfirmInvitationDelivery(id)
+
+onAction "click", "#startInvitationAssistanceConfirmation", ($el) ->
+  id = $el.data("id")
+  app.list.startInvitationAssistanceConfirmation(id)
+
+onAction "submit", "#confirmInvitationGuests", ($form) ->
+  app.confirmator.confirmGuests($form.find("#guests_count").val())
+
+onAction "click", "#cancelInvitationConfirmation", ->
+  app.confirmator.cancel()

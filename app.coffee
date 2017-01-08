@@ -2,7 +2,9 @@ class Guest
   constructor: ({@id, @name})->
 
 class Invitation
-  constructor: ({@id, @title, @guests, @phone, @email, @isDelivered})->
+  constructor: ({
+    @id, @title, @guests, @phone, @email, @isDelivered,
+    @confirmedGuestsCount, @isAssistanceConfirmed})->
 
 class EditableInvitation extends Invitation
   constructor: (opts = {}) ->
@@ -103,6 +105,13 @@ class InvitationsList
   totalDeliveredInvitations: ->
     _.filter(@invitations, (invitation) -> invitation.isDelivered).length
 
+  totalConfirmedGuests: ->
+    _.chain(@invitations).
+    map((invitation) -> parseInt(invitation.confirmedGuestsCount)).
+    reject((count) -> isNaN(count)).
+    reduce((acc, count) -> acc + count).
+    value() or 0
+
   confirmInvitationDelivery: (id) ->
     invitation = new DeliverableInvitation(@findInvitation(id))
     invitation.confirmDelivery()
@@ -135,6 +144,40 @@ class window.GuestsApp
   commitEdition: (invitation)->
     @list.updateInvitation(invitation)
     @addInvitation()
+
+  startInvitationAssistanceConfirmation: (invitation) ->
+    @confirmator = new AssistanceConfirmationControl(invitation, @, @display)
+
+  commitInvitationConfirmation: (invitation) ->
+    @list.updateInvitation(invitation)
+    @confirmator = undefined
+
+  cancelInvitationConfirmation: (invitation) ->
+    @confirmator = undefined
+
+class AssistanceConfirmationControl
+  constructor: (invitation, @app, @display) ->
+    @invitation = new AssistanceConfirmableInvitation(invitation)
+    @display.renderConfirmator(@invitation)
+
+  confirmGuests: (count) ->
+    if @invitation.validGuestsConfirmationCount(count)
+      @invitation.setConfirmedGuests(count)
+      @app.commitInvitationConfirmation(@invitation)
+      @display.removeConfirmator()
+
+  cancel: ->
+    @app.cancelInvitationConfirmation(@invitation)
+    @display.removeConfirmator()
+
+  class AssistanceConfirmableInvitation extends Invitation
+    validGuestsConfirmationCount: (count) ->
+      parseInt(count) >= 0
+
+    setConfirmedGuests: (count) ->
+      count = parseInt(count)
+      @confirmedGuestsCount = count
+      @isAssistanceConfirmed = true
 
 class InvitationsListControl
   constructor: (@app, @store, @display) ->
@@ -178,6 +221,9 @@ class InvitationsListControl
     @list.unconfirmInvitationDelivery(id)
     @updateStore()
     @updateDisplay()
+
+  startInvitationAssistanceConfirmation: (id) ->
+    @app.startInvitationAssistanceConfirmation(@findInvitation(id))
 
 class EditInvitationControl
   constructor: (@invitation, @app, @display) ->
