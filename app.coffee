@@ -4,15 +4,14 @@ class Guest
 class Invitation
   constructor: ({
     @id, @title, @guests, @phone, @email, @isDelivered,
-    @confirmedGuestsCount, @isAssistanceConfirmed})->
+    @confirmedGuestsCount, @isAssistanceConfirmed}) ->
 
 class EditableInvitation extends Invitation
   constructor: (opts = {}) ->
     super(opts)
-    @id = opts.id
     @title = opts.title or ""
-    @guests = (new EditableGuest(guest) for guest in (opts.guests or []))
     @phone = ""
+    @guests = (new EditableGuest(guest) for guest in (opts.guests or []))
     @isNewInvitation = !@id
     @isEditingPhone = false
     @isEditingEmail = false
