@@ -16,7 +16,8 @@ invitationField = renderable (content) ->
   div style: "margin-bottom: 1em", content
 
 invitationLabel = renderable (text) ->
-  small ".text-muted", text
+  label ->
+    small ".text-muted", text
 
 invitationValue = renderable (text) ->
   br()
@@ -37,7 +38,7 @@ undoButton = renderable (id, opts = {}) ->
 defaultInput = renderable (id, opts = {}) ->
   input "#{id}.form-control", _.extend({
     type: "text",
-    style: "margin-right: 5px;"
+    style: "margin-right: 5px; margin-bottom: 5px;"
   }, opts)
 
 textInput = defaultInput
@@ -54,7 +55,7 @@ editInvitationView = renderable (editor) ->
       invitationField ->
         invitationLabel "Título de la invitación"
         if editor.isEditingTitle
-          form "#addInvitationTitle.form-inline", ->
+          form "#addInvitationTitle", ->
             textInput "#invitationTitle", value: editor.title, placeholder: "Familia Perez"
             button ".btn.btn-default", type: "submit", "Agregar"
         else
@@ -64,19 +65,19 @@ editInvitationView = renderable (editor) ->
       unless editor.isEditingTitle
         invitationField ->
           invitationLabel "Invitados"
-          ul style: "padding-top: 5px; padding-left: 1.5em", ->
+          ul ".list-unstyled", ->
             for guest in editor.guests
-              li style: "padding: 5px 0;", ->
+              li style: "border-bottom: 1px solid #eee; padding: 0.5em 0;", ->
                 if guest.isEditing
-                  form "#updateGuest.form-inline", "data-id": guest.id, style: "margin-bottom: 5px", ->
+                  form "#updateGuest", "data-id": guest.id, style: "margin-bottom: 5px", ->
                     textInput "#guest_#{guest.id}_name", value: guest.name, placeholder: "Juan Perez"
                     button ".btn.btn-default", type: "submit", "Actualizar"
                 else
                   text guest.name
                   editButton "#editInvitationGuest", "data-id": guest.id
                   trashButton "#deleteInvitationGuest", "data-id": guest.id
-            li ->
-              form "#addGuest.form-inline", ->
+            li style: "padding: 0.5em 0", ->
+              form "#addGuest", ->
                 textInput "#name", placeholder: "Juan Perez"
                 button ".btn.btn-default", type: "submit", "Agregar"
 
@@ -106,42 +107,43 @@ editInvitationView = renderable (editor) ->
 
 invitationsView = renderable (list) ->
   panel "Lista de invitaciones (#{list.invitations.length})", ->
-    table ".table", ->
-      thead ->
-        tr ->
-          th "Título"
-          th "Invitados (#{list.totalGuests()})"
-          th "Teléfono"
-          th "Email"
-          th ".text-center", "¿Entregada? (#{list.totalDeliveredInvitations()})"
-          th ".text-center", "Confirmados (#{list.totalConfirmedGuests()})"
-          th()
-      tbody ->
-        for invitation in list.invitations
+    div ".table-responsive", ->
+      table ".table", ->
+        thead ->
           tr ->
-            td invitation.title
-            td ->
-              text "(#{invitation.guests.length}) - "
-              text  _.map(invitation.guests, (guest) -> guest.name).join ", "
-            td invitation.phone
-            td invitation.email
-            td ".text-center", ->
-              if invitation.isDelivered
-                span "Sí "
-                undoButton "#unconfirmInvitationDelivery", "data-id": invitation.id
-              else
-                button "#confirmInvitationDelivery.btn.btn-default.btn-sm", "data-id": invitation.id, ->
-                  text "Confirmar entrega"
-            td ".text-center", ->
-              if invitation.isAssistanceConfirmed
-                text invitation.confirmedGuestsCount
-                editButton "#startInvitationAssistanceConfirmation", "data-id": invitation.id
-              else
-                button "#startInvitationAssistanceConfirmation.btn.btn-default.btn-sm", "data-id": invitation.id, ->
-                  text "Confirmar asistencia"
-            td ".text-right", ->
-              editButton "#editInvitation", "data-id": invitation.id
-              trashButton "#deleteInvitation", "data-id": invitation.id
+            th "Título"
+            th "Invitados (#{list.totalGuests()})"
+            th "Teléfono"
+            th "Email"
+            th ".text-center", "¿Entregada? (#{list.totalDeliveredInvitations()})"
+            th ".text-center", "Confirmados (#{list.totalConfirmedGuests()})"
+            th()
+        tbody ->
+          for invitation in list.invitations
+            tr ->
+              td invitation.title
+              td ->
+                text "(#{invitation.guests.length}) - "
+                text  _.map(invitation.guests, (guest) -> guest.name).join ", "
+              td invitation.phone
+              td invitation.email
+              td ".text-center", ->
+                if invitation.isDelivered
+                  span "Sí "
+                  undoButton "#unconfirmInvitationDelivery", "data-id": invitation.id
+                else
+                  button "#confirmInvitationDelivery.btn.btn-default.btn-sm", "data-id": invitation.id, ->
+                    text "Confirmar entrega"
+              td ".text-center", ->
+                if invitation.isAssistanceConfirmed
+                  text invitation.confirmedGuestsCount
+                  editButton "#startInvitationAssistanceConfirmation", "data-id": invitation.id
+                else
+                  button "#startInvitationAssistanceConfirmation.btn.btn-default.btn-sm", "data-id": invitation.id, ->
+                    text "Confirmar asistencia"
+              td ".text-right", ->
+                editButton "#editInvitation", "data-id": invitation.id
+                trashButton "#deleteInvitation", "data-id": invitation.id
 
 confirmAssistanceView = renderable (confirmator) ->
   div ".modal.fade", tabindex: "-1", role: "dialog", ->
