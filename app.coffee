@@ -10,7 +10,7 @@ class EditableInvitation extends Invitation
   constructor: (opts = {}) ->
     super(opts)
     @title = opts.title or ""
-    @phone = ""
+    @phone = opts.phone or ""
     @guests = (new EditableGuest(guest) for guest in (opts.guests or []))
     @isNewInvitation = !@id
     @isEditingPhone = false

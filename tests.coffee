@@ -161,7 +161,7 @@ module "Edit invitation", (hooks) ->
     store = new MemoryStore
     @page = new TestDisplay
     @app = new GuestsApp(store, @page)
-    addInvitation(@app, "Inv 1", ["guest1", "guest2"])
+    addInvitation(@app, "Inv 1", ["guest1", "guest2"], "1234", "b@g.com")
 
   test "knows is not a new invitation", (assert) ->
     invitation = first @page.list.invitations
@@ -179,6 +179,8 @@ module "Edit invitation", (hooks) ->
     assert.equal @page.editor.title, "Inv 1"
     assert.equal first(@page.editor.guests).name, "guest1"
     assert.equal second(@page.editor.guests).name, "guest2"
+    assert.equal @page.editor.phone, "1234"
+    assert.equal @page.editor.email, "b@g.com"
 
   test "after commit it updates the invitation", (assert) ->
     invitation = first @page.list.invitations
