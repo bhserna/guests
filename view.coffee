@@ -181,7 +181,7 @@ confirmAssistanceView = renderable (confirmator) ->
             button ".btn.btn-primary", type: "submit", "Guardar"
 
 view = renderable (data) ->
-  div ".row.alert.alert-warning", style: "margin-top: 1em", ->
+  div ".hide.row.alert.alert-warning", style: "margin-top: 1em", ->
     strong "¡Bienvenido al demo! "
     if data.list.invitations.length >= 0
       br()
