@@ -1,3 +1,5 @@
+require "active_record"
+
 module Store
   class InMemoryStore
     def initialize
@@ -10,6 +12,19 @@ module Store
 
     def all
       @records
+    end
+  end
+
+  class DbStore
+    class Lead < ActiveRecord::Base
+    end
+
+    def save(record)
+      Lead.create(record)
+    end
+
+    def all
+      Lead.all
     end
   end
 end
