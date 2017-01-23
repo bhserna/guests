@@ -1,3 +1,3 @@
 require 'active_record'
 
-ActiveRecord::Base.establish_connection(ENV['DATABASE_URL'])
+ActiveRecord::Base.establish_connection(adapter: "postgresql", database: ENV['DATABASE_URL'])
