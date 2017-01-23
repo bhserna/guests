@@ -1,8 +1,9 @@
 require "sinatra"
 require_relative "lib/leads"
-require_relative "lib/store"
 
-store = Store::InMemoryStore.new
+require_relative "lib/store/db_store/config"
+require_relative "lib/store"
+store = Store::DbStore.new
 
 get "/" do
   erb :home
