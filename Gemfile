@@ -5,3 +5,6 @@ gem 'activerecord'
 gem "pg"
 
 gem "sinatra-partial"
+
+# test
+gem "rspec"

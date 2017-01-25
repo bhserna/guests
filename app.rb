@@ -2,12 +2,12 @@ require "sinatra"
 require 'sinatra/partial'
 
 require_relative "lib/leads"
-require_relative "lib/store/db_store/config"
+require_relative "lib/register_wedding"
+require_relative "lib/see_all_wedding_registrations"
 require_relative "lib/store"
 
 set :partial_template_engine, :erb
-
-store = Store::DbStore.new
+store = Store.for_env(settings.environment)::WeddingRegistrations.new
 
 get "/" do
   erb :home
@@ -22,21 +22,21 @@ get "/tests" do
 end
 
 get "/registro" do
-  @form = Leads.register_form
-  erb :new_lead, layout: false
+  @form = RegisterWedding.build_form
+  erb :new_wedding_registration, layout: false
 end
 
 post '/registro' do
-  response = Leads.register_lead(params, store)
-  puts params.inspect
-  if response.success?
+  registration = RegisterWedding.register(params, store)
+
+  if registration.success?
     redirect to("/registro_exitoso")
   else
-    @form = response.form
-    erb :new_lead, layout: false
+    @form = registration.form
+    erb :new_wedding_registration, layout: false
   end
 end
 
 get "/registro_exitoso" do
-  erb :registered_lead, layout: false
+  erb :wedding_registered, layout: false
 end

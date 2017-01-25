@@ -4,7 +4,7 @@ require "active_support/all"
 namespace :db do
   desc "migrate your database"
   task :migrate do
-    require "./lib/store/db_store/config"
-    ActiveRecord::Migrator.migrate('lib/store/db_store/migrate')
+    require "./lib/store/postgres/config"
+    ActiveRecord::Migrator.migrate('lib/store/postgres/migrate')
   end
 end
