@@ -3,3 +3,5 @@ gem 'sinatra'
 gem 'activesupport'
 gem 'activerecord'
 gem "pg"
+
+gem "sinatra-partial"

@@ -1,8 +1,12 @@
 require "sinatra"
-require_relative "lib/leads"
+require 'sinatra/partial'
 
+require_relative "lib/leads"
 require_relative "lib/store/db_store/config"
 require_relative "lib/store"
+
+set :partial_template_engine, :erb
+
 store = Store::DbStore.new
 
 get "/" do
