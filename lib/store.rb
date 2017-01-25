@@ -1,30 +1,13 @@
-require "active_record"
+require_relative "store/in_memory"
+require_relative "store/postgres"
 
 module Store
-  class InMemoryStore
-    def initialize
-      @records = []
-    end
+  CONFIG = {
+    development: InMemoryStore,
+    production: Postgres
+  }
 
-    def save(record)
-      @records << record
-    end
-
-    def all
-      @records
-    end
-  end
-
-  class DbStore
-    class Lead < ActiveRecord::Base
-    end
-
-    def save(record)
-      Lead.create(record)
-    end
-
-    def all
-      Lead.all
-    end
+  def self.for_env(env)
+    CONFIG.fetch(env)
   end
 end
