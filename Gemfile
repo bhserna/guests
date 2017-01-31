@@ -6,3 +6,4 @@ gem "pg"
 gem "sqlite3"
 
 gem "sinatra-partial"
+gem "bcrypt"

@@ -1,12 +1,11 @@
 require "sinatra"
 require 'sinatra/partial'
 require_relative "lib/leads"
+require_relative "lib/users"
 require_relative "db/config"
-require_relative "store"
+require_relative "adapters"
 
 set :partial_template_engine, :erb
-
-store = Store::Leads
 
 get "/" do
   erb :home
@@ -21,23 +20,23 @@ get "/tests" do
 end
 
 get "/registro" do
-  @form = Leads.register_form
-  erb :"lead_register/new", layout: false
+  @form = Users.register_form
+  erb :"registration/new", layout: false
 end
 
 post '/registro' do
-  response = Leads.register_lead(params, store)
+  response = Users.register_user(params, Users::Store, Users::Encryptor)
 
   if response.success?
     redirect to("/registro_exitoso")
   else
     @form = response.form
-    erb :"lead_register/new", layout: false
+    erb :"registration/new", layout: false
   end
 end
 
 get "/registro_exitoso" do
-  erb :"lead_register/registered", layout: false
+  erb :"registration/registered", layout: false
 end
 
 get "/registro_articulos" do
@@ -46,7 +45,7 @@ get "/registro_articulos" do
 end
 
 post '/registro_articulos' do
-  response = Leads.register_lead(params, store)
+  response = Leads.register_lead(params, Leads::Store)
 
   if response.success?
     redirect to("/registro_articulos_exitoso")
