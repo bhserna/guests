@@ -23,22 +23,42 @@ end
 
 get "/registro" do
   @form = Leads.register_form
-  erb :new_lead, layout: false
+  erb :"lead_register/new", layout: false
 end
 
 post '/registro' do
   response = Leads.register_lead(params, store)
-  puts params.inspect
+
   if response.success?
     redirect to("/registro_exitoso")
   else
     @form = response.form
-    erb :new_lead, layout: false
+    erb :"lead_register/new", layout: false
   end
 end
 
 get "/registro_exitoso" do
-  erb :registered_lead, layout: false
+  erb :"lead_register/registered", layout: false
+end
+
+get "/registro_articulos" do
+  @form = Leads.register_form
+  erb :"lead_register/new_from_article", layout: false
+end
+
+post '/registro_articulos' do
+  response = Leads.register_lead(params, store)
+
+  if response.success?
+    redirect to("/registro_articulos_exitoso")
+  else
+    @form = response.form
+    erb :"lead_register/new_from_article", layout: false
+  end
+end
+
+get "/registro_articulos_exitoso" do
+  erb :"lead_register/registered_from_article", layout: false
 end
 
 get "/articles/preguntas-para-reducir-tu-lista-de-invitados" do

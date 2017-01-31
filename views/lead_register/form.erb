@@ -1,0 +1,29 @@
+<div class="container" style="max-width: 600px">
+  <div class="page-header">
+    <h1>Nuevo registro</h1>
+  </div>
+
+  <form action="<%= action %>" method="POST">
+    <div class="form-group">
+      <label for="first_name">Nombre</label>
+      <input type="text" class="form-control" name="first_name" id="first_name">
+    </div>
+    <div class="form-group">
+      <label for="last_name">Apellidos</label>
+      <input type="text" class="form-control" name="last_name" id="last_name">
+    </div>
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" class="form-control" name="email" id="email">
+    </div>
+    <div class="form-group">
+      <label for="lead_type">Tu roll en la boda</label>
+      <select class="form-control" name="lead_type" id="lead_type">
+        <% @form.lead_type_options.each do |option| %>
+          <option value="<%= option[:value] %>"><%= option[:text] %></option>
+        <% end %>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-default">Enviar</button>
+  </form>
+</div>
