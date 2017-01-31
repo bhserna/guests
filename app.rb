@@ -40,3 +40,7 @@ end
 get "/registro_exitoso" do
   erb :registered_lead, layout: false
 end
+
+get "/articles/preguntas-para-reducir-tu-lista-de-invitados" do
+  erb :"articles/article-1"
+end
