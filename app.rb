@@ -60,6 +60,8 @@ get "/registro_articulos_exitoso" do
   erb :"lead_register/registered_from_article", layout: false
 end
 
-get "/articles/preguntas-para-reducir-tu-lista-de-invitados" do
+get "/articles/preguntas-para-reducir-su-lista-de-invitados" do
+  @page_title = "Preguntas para reducir su lista de invitados"
+  @meta_description = "Una pequeña guía de preguntas para ayudarlos a reducir su lista de invitados"
   erb :"articles/article-1"
 end
