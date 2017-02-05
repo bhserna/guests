@@ -9,7 +9,7 @@ set :partial_template_engine, :erb
 store = Store::Leads
 
 get "/" do
-  erb :home, layout: :home_layout
+  erb :wedding_planners_home, layout: :home_layout
 end
 
 get "/lista-de-invitados" do
