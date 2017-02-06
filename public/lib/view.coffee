@@ -210,7 +210,7 @@ view = renderable (data) ->
         div ".alert.alert-warning", style: "margin-top: 1em", ->
           p "Los datos de esta lista solo se guardan en la memoria de tu navegador."
           p ->
-            span "Para crear listas para tus eventos y compartirlas con los novios."
+            span "Para crear listas para tus eventos y compartirlas con los novios"
             strong " regístrate por solo $20 USD al mes."
           br()
           a ".btn.btn-primary.btn-lg", href: "/registro", style: "border-radius: 3px;", "Registrarme"
