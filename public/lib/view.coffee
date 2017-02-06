@@ -182,7 +182,7 @@ confirmAssistanceView = renderable (confirmator) ->
 
 view = renderable (data) ->
   div ".row", ->
-    div ".col-md-3", style: "background: #f9f9f9; border-radius: 5px; margin-top: 20px;", ->
+    div ".col-md-3 clearfix", style: "background: #f9f9f9; border-radius: 5px; margin-top: 20px;", ->
       editInvitationView(data.editor)
 
     div ".col-md-9", ->
