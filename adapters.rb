@@ -6,6 +6,10 @@ module Users
     def self.encrypt(password)
       BCrypt::Password.create(password)
     end
+
+    def self.password?(hash, password)
+      BCrypt::Password.new(hash) == password
+    end
   end
 
   module Store
@@ -18,6 +22,20 @@ module Users
 
     def self.all
       User.all
+    end
+
+    def self.find_by_email(email)
+      User.find_by_email(email)
+    end
+  end
+
+  class SessionStore
+    def initialize(session)
+      @session = session
+    end
+
+    def save_user_id(id)
+      session[:user_id] = id
     end
   end
 end
