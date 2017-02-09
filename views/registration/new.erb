@@ -26,15 +26,8 @@
         <%= form_group @form, :last_name, "Apellidos" %>
         <%= form_group @form, :email, "Email", input_type: "email" %>
         <%= select_form_group @form, :user_type, "Tu roll en la boda", @form.user_type_options %>
-
-        <div class="form-group">
-          <label for="password">Contraseña</label>
-          <input type="password" class="form-control" name="password" id="password">
-        </div>
-        <div class="form-group">
-          <label for="password_confirmation">Confirmación de contraseña</label>
-          <input type="password" class="form-control" name="password_confirmation" id="password_confirmation">
-        </div>
+        <%= form_group @form, :password, "Contraseña", input_type: "password" %>
+        <%= form_group @form, :password_confirmation, "Confirmación de contraseña", input_type: "password" %>
         <button type="submit" class="btn btn-default">Enviar</button>
       </form>
     </div>

@@ -24,6 +24,10 @@ module Users
       User.all
     end
 
+    def self.find(id)
+      User.find(id)
+    end
+
     def self.find_by_email(email)
       User.find_by_email(email)
     end
@@ -37,6 +41,10 @@ module Users
     def save_user_id(id)
       session[:user_id] = id
     end
+
+    private
+
+    attr_reader :session
   end
 end
 

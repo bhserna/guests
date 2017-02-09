@@ -40,6 +40,11 @@ RSpec.describe "Register user" do
     expect(form.password_confirmation).to eq nil
   end
 
+  it "has no errors" do
+    form = register_user_form
+    expect(form.errors).to be_empty
+  end
+
   it "has some user options" do
     form = register_user_form
     expect(form.user_type_options).to eq [

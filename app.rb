@@ -6,31 +6,11 @@ require_relative "lib/users"
 require_relative "db/config"
 require_relative "adapters"
 
+require_relative "helpers/form_helpers"
+
 set :partial_template_engine, :erb
-
-helpers do
-  def form_group(form, field, label, opts = {})
-    input_type = opts.fetch(:input_type, "text")
-
-    html = ""
-    html += "<div class='form-group'>"
-    html += "<label for='#{field}'>#{label}</label>"
-    html += "<input type='#{input_type}' class='form-control' value='#{form.send(field)}' name='#{field}' id='#{field}'>"
-    html += "</div>"
-    html
-  end
-
-  def select_form_group(form, field, label, options)
-    html = ""
-    html += "<div class='form-group'>"
-    html += "<label for='#{field}'>#{label}</label>"
-    html += "<select class='form-control' name='#{field}' id='#{field}'>"
-    html += options.map { |option| "<option #{form.send(field) == option[:value] ? "selected" : form.send(field)} value='#{option[:value]}'>#{option[:text]}</option>" }.join
-    html += "</select>"
-    html += "</div>"
-    html
-  end
-end
+enable :sessions
+helpers FormHelpers
 
 get "/tests" do
   erb :tests
@@ -50,7 +30,7 @@ get "/registro" do
 end
 
 post '/registro' do
-  response = Users.register_user(params, Users::Store, Users::Encryptor, Users::SessionStore)
+  response = Users.register_user(params, Users::Store, Users::Encryptor, Users::SessionStore.new(session))
 
   if response.success?
     redirect to("/home")
@@ -58,6 +38,11 @@ post '/registro' do
     @form = response.form
     erb :"registration/new", layout: false
   end
+end
+
+get "/home" do
+  @user = Users::Store.find(session[:user_id])
+  erb :user_home, layout: false
 end
 
 get "/registro_exitoso" do

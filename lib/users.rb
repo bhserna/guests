@@ -68,7 +68,8 @@ module Users
 
     def self.register_user(data, store, encryptor, session_store)
       form = Form.new(data)
-      return Error.new(form) if form.errors.any?
+      errors = Validator.new(form).errors
+      return (form.add_errors(errors) and Error.new(form)) if errors.any?
       user = create_record(form, store, encryptor)
       session_store.save_user_id(user[:id])
       Success
@@ -102,16 +103,51 @@ module Users
       end
     end
 
-    class Form
-      ATTRS = [:first_name, :last_name, :email, :user_type, :password, :password_confirmation]
-      attr_reader *ATTRS
-
-      def initialize(data = {})
-        assign_attributes(data)
+    class Validator
+      def initialize(form)
+        @form = form
       end
 
       def errors
-        [validate_confirmation, *validate_presense_of(ATTRS)].compact.to_h
+        [validate_confirmation,
+         *validate_presense_of(form.fields)].compact.to_h
+      end
+
+      private
+
+      attr_reader :form
+
+      def validate_confirmation
+        unless form.password == form.password_confirmation
+          [:password_confirmation, "no coincide"]
+        end
+      end
+
+      def validate_presense_of(attrs)
+        attrs.map do |attr|
+          value = form.send(attr)
+          message = "no puede estar en blanco"
+          [attr, message] if value.nil? || value.empty?
+        end
+      end
+    end
+
+    class Form
+      ATTRS = [:first_name, :last_name, :email, :user_type, :password, :password_confirmation]
+      attr_reader *ATTRS
+      attr_reader :errors
+
+      def initialize(data = {})
+        assign_attributes(data)
+        @errors = {}
+      end
+
+      def fields
+        ATTRS
+      end
+
+      def add_errors(errors)
+        @errors = errors
       end
 
       def user_type_options
@@ -128,20 +164,6 @@ module Users
       def assign_attributes(data)
         ATTRS.each do |attr|
           send("#{attr}=", data[attr.to_s])
-        end
-      end
-
-      def validate_confirmation
-        unless password == password_confirmation
-          [:password_confirmation, "no coincide"]
-        end
-      end
-
-      def validate_presense_of(attrs)
-        attrs.map do |attr|
-          value = send(attr)
-          message = "no puede estar en blanco"
-          [attr, message] if value.nil? || value.empty?
         end
       end
     end
