@@ -3,8 +3,8 @@ module Users
     Registration.form
   end
 
-  def self.register_user(data, store, encryptor)
-    Registration.register_user(data, store, encryptor)
+  def self.register_user(data, store, encryptor, session_store)
+    Registration.register_user(data, store, encryptor, session_store)
   end
 
   def self.login_form
@@ -66,21 +66,22 @@ module Users
       Form.new
     end
 
-    def self.register_user(data, store, encryptor)
+    def self.register_user(data, store, encryptor, session_store)
       form = Form.new(data)
+      return Error.new(form) if form.errors.any?
+      user = create_record(form, store, encryptor)
+      session_store.save_user_id(user[:id])
+      Success
+    end
 
-      if form.errors.any?
-        Error.new(form)
-      else
-        store.save(
-          first_name: form.first_name,
-          last_name: form.last_name,
-          email: form.email,
-          user_type: form.user_type,
-          password_hash: encryptor.encrypt(form.password)
-        )
-        Success
-      end
+    def self.create_record(form, store, encryptor)
+      store.save(
+        first_name: form.first_name,
+        last_name: form.last_name,
+        email: form.email,
+        user_type: form.user_type,
+        password_hash: encryptor.encrypt(form.password)
+      )
     end
 
     class Error

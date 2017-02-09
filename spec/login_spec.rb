@@ -58,7 +58,7 @@ RSpec.describe "Login user" do
       }
     end
 
-    it "does stores user id on session store" do
+    it "stores user id on session store" do
       expect(session_store)
         .to receive(:save_user_id)
         .with("j-id-1234")

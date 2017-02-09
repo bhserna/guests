@@ -3,6 +3,7 @@ require_relative "../lib/users.rb"
 RSpec.describe "Register user" do
   class DummyStore
     def self.save(data)
+      data
     end
   end
 
@@ -12,12 +13,21 @@ RSpec.describe "Register user" do
     end
   end
 
+  module DummySessionStore
+    def self.save_user_id(id)
+    end
+  end
+
+  def session_store
+    DummySessionStore
+  end
+
   def register_user_form
     Users.register_form
   end
 
   def register_user(data, store)
-    Users.register_user(data, store, FakeEncryptor)
+    Users.register_user(data, store, FakeEncryptor, session_store)
   end
 
   it "has a form" do
@@ -62,7 +72,7 @@ RSpec.describe "Register user" do
         email: "j@example.com",
         user_type: "groom",
         password_hash: "---encripted--1234secret--"
-      )
+      ).and_call_original
 
       register_user(data, store)
     end
@@ -70,6 +80,21 @@ RSpec.describe "Register user" do
     it "returns success" do
       registration = register_user(data, store)
       expect(registration).to be_success
+    end
+
+    it "stores user id on session store" do
+      record = {
+        id: SecureRandom.uuid,
+        first_name: "Juanito",
+        last_name: "Perez",
+        email: "j@example.com",
+        user_type: "groom",
+        password_hash: "---encripted--1234secret--"
+      }
+
+      allow(store).to receive(:save).and_return(record)
+      expect(session_store).to receive(:save_user_id).with(record[:id])
+      register_user(data, store)
     end
   end
 
