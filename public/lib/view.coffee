@@ -182,39 +182,38 @@ confirmAssistanceView = renderable (confirmator) ->
 
 view = renderable (data) ->
   div ".row", ->
-    div ".col-md-3", style: "background: #f9f9f9; border-radius: 5px; margin-top: 20px;", ->
+    div ".col-md-3 clearfix", style: "background: #f9f9f9; border-radius: 5px; margin-top: 20px;", ->
       editInvitationView(data.editor)
 
     div ".col-md-9", ->
       invitationsView(data.list)
 
-      if data.list.invitations.length < 2
-        div ".alert.alert-info", style: "margin-top: 1em", ->
-          h4 "Registra a tus invitados por invitación o familia"
+      div ".alert.alert-info", style: "margin-top: 1em", ->
+        h4 "Registra a tus invitados por invitación o familia"
 
-          p ->
-            strong "1. Escribe el nombre de la invitación."
-            br()
-            span "No la pienses mucho, con poner algo como 'Familia Perez Martinez' o 'Juanita y su novio' es suficiente, ya despues con más información lo puedes editar."
+        p ->
+          strong "1. Escribe el nombre de la invitación."
+          br()
+          span "Ejemplo: 'Familia Perez Martinez' o 'Carlos Hernandez y Sra.'"
+          br()
+          span "Consejo: Usa 'Enter' en lugar de dar click en 'Agregar'"
 
-          p ->
-            strong "2. Agrega el nombre de las personas en esa invitación."
-            br()
-            span "No tienes que saber el nombre completo puedes poner 'Paquita' y 'novio' o 'Tía Karla', 'Esposo' e 'hijo'. Después si lo necesitan pueden editar los nombres."
+        p ->
+          strong "2. Agrega el nombre de las personas en esa invitación."
+          br()
+          span "Consejo: Usa 'Enter' en lugar de dar click en 'Agregar'"
 
-          p ->
-            strong "3. Guarda la invitación"
-            br()
-            span "Solo da click Guardar invitación"
+        p ->
+          strong "3. Da click en Guarda invitación"
 
       if data.list.invitations.length >= 2
         div ".alert.alert-warning", style: "margin-top: 1em", ->
           p "Los datos de esta lista solo se guardan en la memoria de tu navegador."
           p ->
-            span "Para guardar la información en nuestros servidores y verla en cualquier dispositivo,"
-            strong " registra tu boda por solo $10 USD."
+            span "Para crear listas para tus eventos y compartirlas con los novios"
+            strong " regístrate por solo $20 USD al mes."
           br()
-          a ".btn.btn-primary.btn-lg", href: "/registro", style: "border-radius: 3px;", "Registrar mi boda"
+          a ".btn.btn-primary.btn-lg", href: "/registro", style: "border-radius: 3px;", "Registrarme"
 
 
 class Page

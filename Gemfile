@@ -2,8 +2,13 @@ source 'https://rubygems.org'
 gem 'sinatra'
 gem 'activesupport'
 gem 'activerecord'
-gem "pg"
-gem "sqlite3"
-
 gem "sinatra-partial"
 gem "bcrypt"
+
+group :production do
+  gem "pg"
+end
+
+group :development do
+  gem "sqlite3"
+end

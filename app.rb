@@ -17,16 +17,16 @@ get "/tests" do
 end
 
 get "/" do
-  erb :home
+  erb :wedding_planners_home, layout: :home_layout
 end
 
 get "/lista-de-invitados" do
-  erb :guests, layout: false
+  erb :guests
 end
 
 get "/registro" do
   @form = Users.register_form
-  erb :"registration/new", layout: false
+  erb :"registration/new"
 end
 
 post '/registro' do
@@ -36,7 +36,7 @@ post '/registro' do
     redirect to("/home")
   else
     @form = response.form
-    erb :"registration/new", layout: false
+    erb :"registration/new"
   end
 end
 
@@ -46,12 +46,12 @@ get "/home" do
 end
 
 get "/registro_exitoso" do
-  erb :"registration/registered", layout: false
+  erb :"registration/registered"
 end
 
 get "/registro_articulos" do
   @form = Leads.register_form
-  erb :"lead_register/new_from_article", layout: false
+  erb :"lead_register/new_from_article"
 end
 
 post '/registro_articulos' do
@@ -61,14 +61,16 @@ post '/registro_articulos' do
     redirect to("/registro_articulos_exitoso")
   else
     @form = response.form
-    erb :"lead_register/new_from_article", layout: false
+    erb :"lead_register/new_from_article"
   end
 end
 
 get "/registro_articulos_exitoso" do
-  erb :"lead_register/registered_from_article", layout: false
+  erb :"lead_register/registered_from_article"
 end
 
-get "/articles/preguntas-para-reducir-tu-lista-de-invitados" do
-  erb :"articles/article-1"
+get "/articles/preguntas-para-reducir-su-lista-de-invitados" do
+  @page_title = "Preguntas para reducir su lista de invitados"
+  @meta_description = "Una pequeña guía de preguntas para ayudarlos a reducir su lista de invitados"
+  erb :"articles/article-1", layout: :home_layout
 end

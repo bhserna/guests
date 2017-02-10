@@ -46,9 +46,9 @@ module Leads
     end
 
     def lead_type_options
-      [{value: :groom, text: "Novio"},
+      [{value: :wedding_planner, text: "Wedding planner"},
        {value: :bride, text: "Novia"},
-       {value: :wedding_planner, text: "Wedding planner"},
+       {value: :groom, text: "Novio"},
        {value: :other, text: "Otro"}]
     end
 

@@ -25,9 +25,9 @@ RSpec.describe "Register lead" do
   it "has some lead options" do
     form = register_lead_form
     expect(form.lead_type_options).to eq [
-      {value: :groom, text: "Novio"},
-      {value: :bride, text: "Novia"},
       {value: :wedding_planner, text: "Wedding planner"},
+      {value: :bride, text: "Novia"},
+      {value: :groom, text: "Novio"},
       {value: :other, text: "Otro"}
     ]
   end
