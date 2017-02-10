@@ -27,7 +27,7 @@ RSpec.describe "Login user" do
   end
 
   def login(data, store)
-    Users.login(data, store, FakeEncryptor, DummySessionStore)
+    Users.login(data, store: store, encryptor: FakeEncryptor, session_store: DummySessionStore)
   end
 
   def session_store

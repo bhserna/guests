@@ -38,6 +38,10 @@ module Users
       @session = session
     end
 
+    def user_id?
+      !!session[:user_id]
+    end
+
     def save_user_id(id)
       session[:user_id] = id
     end

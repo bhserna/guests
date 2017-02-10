@@ -3,16 +3,24 @@ module Users
     Registration.form
   end
 
-  def self.register_user(data, store, encryptor, session_store)
-    Registration.register_user(data, store, encryptor, session_store)
+  def self.register_user(data, config)
+    Registration.register_user(data, config)
   end
 
   def self.login_form
     Login.form
   end
 
-  def self.login(data, store, encryptor, session_store)
-    Login.login(data, store, encryptor, session_store)
+  def self.login(data, config)
+    Login.login(data, config)
+  end
+
+  def self.user?(config)
+    config.fetch(:session_store).user_id?
+  end
+
+  def self.guest?(config)
+    !config.fetch(:session_store).user_id?
   end
 
   module Login
@@ -20,7 +28,7 @@ module Users
       Form.new
     end
 
-    def self.login(data, store, encryptor, session_store)
+    def self.login(data, store:, encryptor:, session_store:)
       return Error unless user = find_user(data, store)
       return Error unless valid_password?(data, user, encryptor)
       session_store.save_user_id(user[:id])
@@ -66,7 +74,7 @@ module Users
       Form.new
     end
 
-    def self.register_user(data, store, encryptor, session_store)
+    def self.register_user(data, store:, encryptor:, session_store:)
       form = Form.new(data)
       errors = Validator.new(form).errors
       return (form.add_errors(errors) and Error.new(form)) if errors.any?

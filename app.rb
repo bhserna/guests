@@ -12,6 +12,12 @@ set :partial_template_engine, :erb
 enable :sessions
 helpers FormHelpers
 
+def users_config
+  {store: Users::Store,
+   encryptor: Users::Encryptor,
+   session_store: Users::SessionStore.new(session)}
+end
+
 get "/tests" do
   erb :tests
 end
@@ -25,12 +31,15 @@ get "/lista-de-invitados" do
 end
 
 get "/registro" do
+  redirect to("/home") if Users.user?(users_config)
+
   @form = Users.register_form
   erb :"registration/new"
 end
 
 post '/registro' do
-  response = Users.register_user(params, Users::Store, Users::Encryptor, Users::SessionStore.new(session))
+  redirect to("/home") if Users.user?(users_config)
+  response = Users.register_user(params, users_config)
 
   if response.success?
     redirect to("/home")
@@ -41,7 +50,8 @@ post '/registro' do
 end
 
 get "/home" do
-  @user = Users::Store.find(session[:user_id])
+  redirect to("/") if Users.guest?(users_config)
+  @user = users_config.fetch(:store).find(session[:user_id])
   erb :user_home, layout: false
 end
 

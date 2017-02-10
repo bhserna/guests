@@ -27,7 +27,7 @@ RSpec.describe "Register user" do
   end
 
   def register_user(data, store)
-    Users.register_user(data, store, FakeEncryptor, session_store)
+    Users.register_user(data, store: store, encryptor: FakeEncryptor, session_store: session_store)
   end
 
   it "has a form" do
