@@ -7,10 +7,11 @@ require_relative "db/config"
 require_relative "adapters"
 
 require_relative "helpers/form_helpers"
+require_relative "helpers/session_helpers"
 
 set :partial_template_engine, :erb
 enable :sessions
-helpers FormHelpers
+helpers FormHelpers, SessionHelpers
 
 def users_config
   {store: Users::Store,
@@ -49,10 +50,15 @@ post '/registro' do
   end
 end
 
+post "/sign_out" do
+  Users.sign_out(users_config)
+  redirect to("/")
+end
+
 get "/home" do
   redirect to("/") if Users.guest?(users_config)
   @user = users_config.fetch(:store).find(session[:user_id])
-  erb :user_home, layout: false
+  erb :user_home
 end
 
 get "/registro_exitoso" do

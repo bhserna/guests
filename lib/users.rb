@@ -15,6 +15,10 @@ module Users
     Login.login(data, config)
   end
 
+  def self.sign_out(config)
+    config.fetch(:session_store).remove_user_id
+  end
+
   def self.user?(config)
     config.fetch(:session_store).user_id?
   end

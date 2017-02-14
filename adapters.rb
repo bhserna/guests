@@ -46,6 +46,10 @@ module Users
       session[:user_id] = id
     end
 
+    def remove_user_id
+      session[:user_id] = nil
+    end
+
     private
 
     attr_reader :session

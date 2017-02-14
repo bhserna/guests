@@ -16,6 +16,29 @@
     <![endif]-->
   </head>
   <body>
+    <nav class="navbar navbar-default" style="border: none; border-radius: 0">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="collapsed navbar-toggle" data-toggle="collapse" data-target="#bs-navbar-collapse" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="<%= to("/home") %>" class="navbar-brand">Simple Guest List</a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-navbar-collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <% if user_signed_in? %>
+              <li><a href="<%= to("/sign_out") %>">Salir</a></li>
+            <% else %>
+              <li><a href="<%= to("/sign_in") %>">Iniciar Sesión</a></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
     <%= yield %>
     <%= partial "analytics" %>
   </body>
