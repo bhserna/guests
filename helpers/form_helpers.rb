@@ -16,7 +16,7 @@ module FormHelpers
       html += "<label class='control-label' for='#{field}'>#{label}</label>"
       html += "<input type='#{input_type}' class='form-control' value='#{form.send(field)}' name='#{field}' id='#{field}'>"
       if has_error?(form, field)
-        html += "<span class='help-block'>#{form.errors[field]}</span>"
+        html += "<span class='help-block'>#{error_for(field)}</span>"
       end
       html += "</div>"
       html
@@ -32,7 +32,7 @@ module FormHelpers
       html += options.map { |option| "<option #{selected_attribute.(option)} value='#{option[:value]}'>#{option[:text]}</option>" }.join
       html += "</select>"
       if has_error?(form, field)
-        html += "<span class='help-block'>#{form.errors[field]}</span>"
+        html += "<span class='help-block'>#{errors_for(field)}</span>"
       end
       html += "</div>"
       html
@@ -41,7 +41,12 @@ module FormHelpers
     private
 
     def self.has_error?(form, field)
-      !form.errors[field].nil?
+      !!error_for(form, field)
+    end
+
+    def self.error_for(form, field)
+      return unless form.respond_to?(:errors)
+      form.errors[field]
     end
   end
 end

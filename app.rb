@@ -35,24 +35,44 @@ get "/registro" do
   redirect to("/home") if Users.user?(users_config)
 
   @form = Users.register_form
-  erb :"registration/new"
+  erb :"users/registration"
 end
 
 post '/registro' do
   redirect to("/home") if Users.user?(users_config)
-  response = Users.register_user(params, users_config)
+  registration = Users.register_user(params, users_config)
 
-  if response.success?
+  if registration.success?
     redirect to("/home")
   else
-    @form = response.form
-    erb :"registration/new"
+    @form = registration.form
+    erb :"users/registration"
   end
 end
 
 post "/sign_out" do
   Users.sign_out(users_config)
   redirect to("/")
+end
+
+get "/login" do
+  redirect to("/home") if Users.user?(users_config)
+
+  @form = Users.login_form
+  erb :"users/login"
+end
+
+post "/login" do
+  redirect to("/home") if Users.user?(users_config)
+  login = Users.login(params, users_config)
+
+  if login.success?
+    redirect to("/home")
+  else
+    @form = Users.login_form
+    @error = login.error
+    erb :"users/login"
+  end
 end
 
 get "/home" do
@@ -62,7 +82,7 @@ get "/home" do
 end
 
 get "/registro_exitoso" do
-  erb :"registration/registered"
+  erb :"users/registered"
 end
 
 get "/registro_articulos" do

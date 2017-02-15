@@ -1,0 +1,15 @@
+<div class="container" style="max-width: 400px">
+  <div class="page-header">
+    <h1>Nuevo registro</h1>
+  </div>
+
+  <form action="registro" method="POST">
+    <%= form_group @form, :first_name, "Nombre" %>
+    <%= form_group @form, :last_name, "Apellidos" %>
+    <%= form_group @form, :email, "Email", input_type: "email" %>
+    <%= select_form_group @form, :user_type, "Tu roll en la boda", @form.user_type_options %>
+    <%= form_group @form, :password, "Contraseña", input_type: "password" %>
+    <%= form_group @form, :password_confirmation, "Confirmación de contraseña", input_type: "password" %>
+    <button type="submit" class="btn btn-default">Enviar</button>
+  </form>
+</div>
