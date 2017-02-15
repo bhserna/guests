@@ -31,14 +31,14 @@ get "/lista-de-invitados" do
   erb :guests
 end
 
-get "/registro" do
+get "/registration" do
   redirect to("/home") if Users.user?(users_config)
 
   @form = Users.register_form
   erb :"users/registration"
 end
 
-post '/registro' do
+post '/registration' do
   redirect to("/home") if Users.user?(users_config)
   registration = Users.register_user(params, users_config)
 

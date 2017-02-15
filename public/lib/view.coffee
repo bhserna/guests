@@ -213,7 +213,7 @@ view = renderable (data) ->
             span "Para crear listas para tus eventos y compartirlas con los novios"
             strong " regístrate por solo $20 USD al mes."
           br()
-          a ".btn.btn-primary.btn-lg", href: "/registro", style: "border-radius: 3px;", "Registrarme"
+          a ".btn.btn-primary.btn-lg", href: "/registration", style: "border-radius: 3px;", "Registrarme"
 
 
 class Page
