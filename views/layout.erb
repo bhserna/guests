@@ -33,6 +33,9 @@
               <button type="submit" class="btn btn-link">Salir</button>
             </form>
           <% else %>
+            <a href="<%= to("/registration") %>" class="btn btn-primary navbar-btn navbar-right">
+              Registrarme
+            </a>
             <ul class="nav navbar-nav navbar-right">
               <li><a href="<%= to("/login") %>">Iniciar Sesión</a></li>
             </ul>

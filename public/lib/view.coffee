@@ -188,23 +188,24 @@ view = renderable (data) ->
     div ".col-md-9", ->
       invitationsView(data.list)
 
-      div ".alert.alert-info", style: "margin-top: 1em", ->
-        h4 "Registra a tus invitados por invitación o familia"
+      if data.list.invitations.length < 2
+        div ".alert.alert-info", style: "margin-top: 1em", ->
+          h4 "Registra a tus invitados por invitación o familia"
 
-        p ->
-          strong "1. Escribe el nombre de la invitación."
-          br()
-          span "Ejemplo: 'Familia Perez Martinez' o 'Carlos Hernandez y Sra.'"
-          br()
-          span "Consejo: Usa 'Enter' en lugar de dar click en 'Agregar'"
+          p ->
+            strong "1. Escribe el nombre de la invitación."
+            br()
+            span "Ejemplo: 'Familia Perez Martinez' o 'Carlos Hernandez y Sra.'"
+            br()
+            span "Consejo: Usa 'Enter' en lugar de dar click en 'Agregar'"
 
-        p ->
-          strong "2. Agrega el nombre de las personas en esa invitación."
-          br()
-          span "Consejo: Usa 'Enter' en lugar de dar click en 'Agregar'"
+          p ->
+            strong "2. Agrega el nombre de las personas en esa invitación."
+            br()
+            span "Consejo: Usa 'Enter' en lugar de dar click en 'Agregar'"
 
-        p ->
-          strong "3. Da click en Guarda invitación"
+          p ->
+            strong "3. Da click en Guarda invitación"
 
       if data.list.invitations.length >= 2
         div ".alert.alert-warning", style: "margin-top: 1em", ->
@@ -212,8 +213,6 @@ view = renderable (data) ->
           p ->
             span "Para crear listas para tus eventos y compartirlas con los novios"
             strong " regístrate por solo $20 USD al mes."
-          br()
-          a ".btn.btn-primary.btn-lg", href: "/registration", style: "border-radius: 3px;", "Registrarme"
 
 
 class Page
