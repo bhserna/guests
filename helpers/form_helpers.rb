@@ -32,7 +32,7 @@ module FormHelpers
       html += options.map { |option| "<option #{selected_attribute.(option)} value='#{option[:value]}'>#{option[:text]}</option>" }.join
       html += "</select>"
       if has_error?(form, field)
-        html += "<span class='help-block'>#{errors_for(form, field)}</span>"
+        html += "<span class='help-block'>#{error_for(form, field)}</span>"
       end
       html += "</div>"
       html

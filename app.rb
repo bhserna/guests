@@ -81,28 +81,24 @@ get "/home" do
   erb :user_home
 end
 
-get "/registro_exitoso" do
-  erb :"users/registered"
-end
-
-get "/registro_articulos" do
+get "/articles/registration" do
   @form = Leads.register_form
-  erb :"lead_register/new_from_article"
+  erb :"articles/registration"
 end
 
-post '/registro_articulos' do
+post '/articles/registration' do
   response = Leads.register_lead(params, Leads::Store)
 
   if response.success?
-    redirect to("/registro_articulos_exitoso")
+    redirect to("/articles/registration_success")
   else
     @form = response.form
-    erb :"lead_register/new_from_article"
+    erb :"articles/registration"
   end
 end
 
-get "/registro_articulos_exitoso" do
-  erb :"lead_register/registered_from_article"
+get "/articles/registration_success" do
+  erb :"articles/registration_success"
 end
 
 get "/articles/preguntas-para-reducir-su-lista-de-invitados" do
