@@ -3,6 +3,8 @@ require 'sinatra/partial'
 
 require_relative "lib/leads"
 require_relative "lib/users"
+require_relative "lib/lists"
+
 require_relative "db/config"
 require_relative "adapters"
 
@@ -105,4 +107,20 @@ get "/articles/preguntas-para-reducir-su-lista-de-invitados" do
   @page_title = "Preguntas para reducir su lista de invitados"
   @meta_description = "Una pequeña guía de preguntas para ayudarlos a reducir su lista de invitados"
   erb :"articles/article-1", layout: :home_layout
+end
+
+get "/lists/new" do
+  @form = Lists.new_list_form
+  erb :"lists/new"
+end
+
+post "/lists" do
+  response = Lists.create_list(params, :store)
+
+  if response.success?
+    redirect to("/home")
+  else
+    @form = response.form
+    erb :"lists/new"
+  end
 end

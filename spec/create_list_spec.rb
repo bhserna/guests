@@ -19,6 +19,11 @@ RSpec.describe "Create list" do
     expect(form.name).to eq nil
   end
 
+  it "has no errors" do
+    form = new_list_form
+    expect(form.errors).to be_empty
+  end
+
   describe "with good data" do
     attr_reader :data, :store
 

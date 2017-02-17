@@ -7,11 +7,13 @@ module Lists
 
   def self.create_list(data, store)
     form = Form.new(data)
+    errors = Validator.validate(form)
 
-    if form.errors.empty?
+    if errors.empty?
       store.save(name: data["name"])
       Success
     else
+      form.add_errors(errors)
       Error.new(form)
     end
   end
@@ -39,26 +41,19 @@ module Lists
 
     def initialize(data = {})
       @name = data["name"]
+      @errors = {}
     end
 
-    def errors
-      Validator.new(self).errors
+    def add_errors(errors)
+      @errors = errors
     end
   end
 
   class Validator
-    include Validations
+    extend Validations
 
-    def initialize(form)
-      @form = form
-    end
-
-    def errors
+    def self.validate(form)
       [*validate_presense_of(form, :name)].compact.to_h
     end
-
-    private
-
-    attr_reader :form
   end
 end
