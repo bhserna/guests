@@ -15,10 +15,14 @@ set :partial_template_engine, :erb
 enable :sessions
 helpers FormHelpers, SessionHelpers
 
+def session_store
+  Users::SessionStore.new(session)
+end
+
 def users_config
   {store: Users::Store,
    encryptor: Users::Encryptor,
-   session_store: Users::SessionStore.new(session)}
+   session_store: session_store}
 end
 
 get "/tests" do
@@ -77,12 +81,6 @@ post "/login" do
   end
 end
 
-get "/home" do
-  redirect to("/") if Users.guest?(users_config)
-  @user = users_config.fetch(:store).find(session[:user_id])
-  erb :user_home
-end
-
 get "/articles/registration" do
   @form = Leads.register_form
   erb :"articles/registration"
@@ -109,13 +107,22 @@ get "/articles/preguntas-para-reducir-su-lista-de-invitados" do
   erb :"articles/article-1", layout: :home_layout
 end
 
+get "/home" do
+  redirect to("/") if Users.guest?(users_config)
+  @user = users_config.fetch(:store).find(session_store.user_id)
+  @lists = Lists.lists_of_user(Lists::Store, session_store)
+  erb :user_home
+end
+
 get "/lists/new" do
+  redirect to("/") if Users.guest?(users_config)
   @form = Lists.new_list_form
   erb :"lists/new"
 end
 
 post "/lists" do
-  response = Lists.create_list(params, :store)
+  redirect to("/") if Users.guest?(users_config)
+  response = Lists.create_list(params, Lists::Store, session_store)
 
   if response.success?
     redirect to("/home")

@@ -5,16 +5,32 @@ module Lists
     Form.new
   end
 
-  def self.create_list(data, store)
+  def self.create_list(data, store, session_store)
     form = Form.new(data)
     errors = Validator.validate(form)
 
     if errors.empty?
-      store.save(name: data["name"])
+      store.save(
+        user_id: session_store.user_id,
+        name: data["name"])
       Success
     else
       form.add_errors(errors)
       Error.new(form)
+    end
+  end
+
+  def self.lists_of_user(store, session_store)
+    store
+      .find_all_by_user_id(session_store.user_id)
+      .map { |record| List.new(record) }
+  end
+
+  class List
+    attr_reader :name
+
+    def initialize(data)
+      @name = data[:name]
     end
   end
 
