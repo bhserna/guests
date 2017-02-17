@@ -1,3 +1,13 @@
-<p>
-Hola <%= @user.first_name %>
-</p>
+<div class="container">
+  <div class="page-header">
+    <a href="<%= to("/lists/new") %>" class="btn btn-default pull-right">Nueva Lista</a>
+    <h1>Tus listas</h1>
+  </div>
+
+  <p class="lead">
+  Hola <%= @user.first_name %> que gusto que empieces a usar simple guest.
+  </p>
+  <p class="lead">
+  Para comenzar a crear tu primera lista da click en el botón "Nueva Lista".
+  </p>
+</div>

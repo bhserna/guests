@@ -1,3 +1,5 @@
+require_relative "validations"
+
 module Users
   def self.register_form
     Registration.form
@@ -116,13 +118,16 @@ module Users
     end
 
     class Validator
+      include Validations
+
       def initialize(form)
         @form = form
       end
 
       def errors
         [validate_confirmation,
-         *validate_presense_of(form.fields)].compact.to_h
+         *validate_presense_of(form, *form.fields)]
+          .compact.to_h
       end
 
       private
@@ -132,14 +137,6 @@ module Users
       def validate_confirmation
         unless form.password == form.password_confirmation
           [:password_confirmation, "no coincide"]
-        end
-      end
-
-      def validate_presense_of(attrs)
-        attrs.map do |attr|
-          value = form.send(attr)
-          message = "no puede estar en blanco"
-          [attr, message] if value.nil? || value.empty?
         end
       end
     end
