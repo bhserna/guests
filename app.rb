@@ -122,7 +122,7 @@ end
 
 post "/lists" do
   redirect to("/") if Users.guest?(users_config)
-  response = Lists.create_list(params, Lists::Store, session_store)
+  response = Lists.create_list(params, Lists::Store, session_store, Lists::IdGenerator)
 
   if response.success?
     redirect to("/home")
@@ -130,4 +130,9 @@ post "/lists" do
     @form = response.form
     erb :"lists/new"
   end
+end
+
+get "/lists/:id" do
+  redirect to("/") if Users.guest?(users_config)
+  erb :"lists/show"
 end

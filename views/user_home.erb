@@ -17,7 +17,7 @@
   <% @lists.each do |list| %>
     <li class="col-md-3">
       <div class="panel panel-default">
-        <a href="#" class="panel-body text-center" style="display: block; cursor: pointer">
+        <a href="<%= to("/lists/#{list.id}") %>" class="panel-body text-center" style="display: block; cursor: pointer">
           <h4><%= list.name %></h4>
         </a>
       </div>

@@ -7,12 +7,18 @@ RSpec.describe "Create list" do
     end
   end
 
+  class FakeIdGenerator
+    def self.generate_id
+      "gen-id-1234"
+    end
+  end
+
   def new_list_form
     Lists.new_list_form
   end
 
   def create_list(data, store, session_store)
-    Lists.create_list(data, store, session_store)
+    Lists.create_list(data, store, session_store, FakeIdGenerator)
   end
 
   def session_store_with(session)
@@ -40,7 +46,7 @@ RSpec.describe "Create list" do
 
     it "saves the list with the form data" do
       expect(store).to receive(:save)
-        .with(user_id: "1234", name: "Lista uno")
+        .with(list_id: "gen-id-1234", user_id: "1234", name: "Lista uno")
       create_list(data, store, session_store)
     end
 

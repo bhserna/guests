@@ -5,12 +5,13 @@ module Lists
     Form.new
   end
 
-  def self.create_list(data, store, session_store)
+  def self.create_list(data, store, session_store, id_generator)
     form = Form.new(data)
     errors = Validator.validate(form)
 
     if errors.empty?
       store.save(
+        list_id: id_generator.generate_id,
         user_id: session_store.user_id,
         name: data["name"])
       Success
@@ -27,9 +28,10 @@ module Lists
   end
 
   class List
-    attr_reader :name
+    attr_reader :id, :name
 
     def initialize(data)
+      @id = data[:list_id]
       @name = data[:name]
     end
   end
