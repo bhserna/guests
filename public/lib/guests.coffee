@@ -87,11 +87,14 @@ class InvitationsList
     invitation.id = @invitations.length + 1
     invitation = @buildInvitation(invitation)
     @invitations.push(invitation)
+    invitation
 
   updateInvitation: (invitation) ->
     byId = _.indexBy(@invitations, "id")
-    byId[invitation.id] = @buildInvitation(invitation)
+    invitation = @buildInvitation(invitation)
+    byId[invitation.id] = invitation
     @invitations = _.values(byId)
+    invitation
 
   deleteInvitation: (id) ->
     @invitations = _.reject(@invitations, (invitation) -> invitation.id is id)
@@ -200,7 +203,8 @@ class InvitationsListControl
     @updateDisplay()
 
   addInvitation: (title, guests) ->
-    @list.addInvitation(title, guests)
+    invitation = @list.addInvitation(title, guests)
+    @store.saveRecord(invitation)
     @updateStore()
     @updateDisplay()
 
@@ -208,7 +212,8 @@ class InvitationsListControl
     @app.editInvitation(@findInvitation(id))
 
   updateInvitation: (id, title, guests) ->
-    @list.updateInvitation(id, title, guests)
+    invitation = @list.updateInvitation(id, title, guests)
+    @store.updateRecord(invitation)
     @updateStore()
     @updateDisplay()
 
@@ -282,6 +287,8 @@ class window.MemoryStore
   constructor: (@records = []) ->
   fetchRecords: -> @records
   updateRecords: (records) -> @records = records
+  saveRecord: (record) ->
+  updateRecord: (record) ->
 
 window.LocalStore =
   fetchRecords: ->

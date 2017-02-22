@@ -26,7 +26,7 @@ def users_config
 end
 
 get "/tests" do
-  erb :tests
+  erb :tests, layout: false
 end
 
 get "/" do
