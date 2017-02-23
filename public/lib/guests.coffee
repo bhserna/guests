@@ -78,7 +78,8 @@ class DeliverableInvitation extends Invitation
     @isDelivered = false
 
 class InvitationsList
-  constructor: (@invitations) ->
+  constructor: (records) ->
+    @invitations = (@buildInvitation(record) for record in records)
 
   findInvitation: (id) ->
     _.findWhere(@invitations, id: id)
@@ -184,28 +185,23 @@ class AssistanceConfirmationControl
 
 class InvitationsListControl
   constructor: (@app, @store, @display) ->
-    @invitations = @store.fetchRecords()
-    @list = new InvitationsList(@invitations)
+    @list = new InvitationsList(@store.fetchRecords())
     @updateDisplay()
 
   updateDisplay: ->
     @display.renderList(@list)
-
-  updateStore: ->
-    @store.updateRecords(@list.invitations)
 
   findInvitation: (id) ->
     @list.findInvitation(id)
 
   deleteInvitation: (id) ->
     @list.deleteInvitation(id)
-    @updateStore()
+    @store.deleteRecord(id)
     @updateDisplay()
 
   addInvitation: (title, guests) ->
     invitation = @list.addInvitation(title, guests)
     @store.saveRecord(invitation)
-    @updateStore()
     @updateDisplay()
 
   editInvitation: (id) ->
@@ -214,17 +210,16 @@ class InvitationsListControl
   updateInvitation: (id, title, guests) ->
     invitation = @list.updateInvitation(id, title, guests)
     @store.updateRecord(invitation)
-    @updateStore()
     @updateDisplay()
 
   confirmInvitationDelivery: (id) ->
-    @list.confirmInvitationDelivery(id)
-    @updateStore()
+    invitation = @list.confirmInvitationDelivery(id)
+    @store.updateRecord(invitation)
     @updateDisplay()
 
   unconfirmInvitationDelivery: (id) ->
-    @list.unconfirmInvitationDelivery(id)
-    @updateStore()
+    invitation = @list.unconfirmInvitationDelivery(id)
+    @store.updateRecord(invitation)
     @updateDisplay()
 
   startInvitationAssistanceConfirmation: (id) ->
@@ -286,13 +281,32 @@ class NewInvitationControl extends EditInvitationControl
 class window.MemoryStore
   constructor: (@records = []) ->
   fetchRecords: -> @records
-  updateRecords: (records) -> @records = records
+
   saveRecord: (record) ->
-  updateRecord: (record) ->
+    @records.push(record)
+
+  updateRecord: (newRecord) ->
+    @records = _.map @records, (current) ->
+      if current.id is newRecord.id then newRecord else current
+
+  deleteRecord: (id) ->
+    @records = _.reject @records, (current) ->
+      current.id is id
 
 window.LocalStore =
   fetchRecords: ->
      JSON.parse(localStorage.invitations || "[]")
 
-  updateRecords: (records) ->
+  _updateRecords: (records) ->
     localStorage.invitations = JSON.stringify(records)
+
+  saveRecord: (record) ->
+    @_updateRecords @fetchRecords().push(record)
+
+  updateRecord: (newRecord) ->
+    @_updateRecords _.map @fetchRecords(), (current) ->
+      if current.id is newRecord.id then newRecord else current
+
+  deleteRecord: (id) ->
+    @_updateRecords _.reject @fetchRecords(), (current) ->
+      current.id is id

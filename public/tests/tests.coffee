@@ -35,11 +35,12 @@ class StoreSpy
     @functionCalls.push(new FunctionCall("updateRecord", record))
     @real.updateRecord(record)
 
+  deleteRecord: (id) ->
+    @functionCalls.push(new FunctionCall("deleteRecord", id))
+    @real.deleteRecord(id)
+
   fetchRecords: ->
     @real.fetchRecords()
-
-  updateRecords: (records) ->
-    @real.updateRecords(records)
 
   allFunctionCalls: ->
     if @functionCalls.length then @functionCalls else "No calls"
@@ -257,9 +258,9 @@ module "Delete invitation", (hooks) ->
 
 module "Show invitations list", (hooks) ->
   hooks.beforeEach ->
-    store = new MemoryStore
+    @store = new StoreSpy(new MemoryStore)
     @page = new TestDisplay
-    @app = new GuestsApp(store, @page)
+    @app = new GuestsApp(@store, @page)
     addInvitation(@app, "Inv 1", ["guest1", "guest2"], "23452345", "a@b.com")
     addInvitation(@app, "Inv 2", ["guest1", "guest2", "guest3"])
     addInvitation(@app, "Inv 3", ["guest1"])
@@ -306,9 +307,9 @@ module "Show invitations list", (hooks) ->
 
 module "Confirm invitation delivery", (hooks) ->
   hooks.beforeEach ->
-    store = new MemoryStore
+    @store = new StoreSpy(new MemoryStore)
     @page = new TestDisplay
-    @app = new GuestsApp(store, @page)
+    @app = new GuestsApp(@store, @page)
     addInvitation(@app, "Inv 1", ["guest1", "guest2"])
     addInvitation(@app, "Inv 2", ["guest1", "guest2"])
     addInvitation(@app, "Inv 3", ["guest1", "guest2"])
@@ -321,6 +322,10 @@ module "Confirm invitation delivery", (hooks) ->
     @app.list.confirmInvitationDelivery(invitation().id)
     assert.ok invitation().isDelivered
     assert.equal @page.list.totalDeliveredInvitations(), 1
+
+    call = last @store.allFunctionCalls()
+    assert.equal call.name, "updateRecord"
+    assert.equal call.params, invitation()
 
   test "undo", (assert) ->
     invitation = => first @page.list.invitations
@@ -335,11 +340,15 @@ module "Confirm invitation delivery", (hooks) ->
     assert.notOk invitation().isDelivered
     assert.equal @page.list.totalDeliveredInvitations(), 0
 
+    call = last @store.allFunctionCalls()
+    assert.equal call.name, "updateRecord"
+    assert.equal call.params, invitation()
+
 module "Confirm invitation invitation assistance", (hooks) ->
   hooks.beforeEach ->
-    store = new MemoryStore
+    @store = new StoreSpy(new MemoryStore)
     @page = new TestDisplay
-    @app = new GuestsApp(store, @page)
+    @app = new GuestsApp(@store, @page)
     addInvitation(@app, "Inv 1", ["guest1", "guest2"], "12341234")
 
   test "unstarted", (assert) ->
@@ -364,6 +373,10 @@ module "Confirm invitation invitation assistance", (hooks) ->
     assert.ok listInvitation().isAssistanceConfirmed
     assert.equal listInvitation().confirmedGuestsCount, 2
     assert.equal @page.list.totalConfirmedGuests(), 2
+
+    call = last @store.allFunctionCalls()
+    assert.equal call.name, "updateRecord"
+    assert.equal call.params, listInvitation()
 
   test "confirm without value", (assert) ->
     listInvitation = => first @page.list.invitations
