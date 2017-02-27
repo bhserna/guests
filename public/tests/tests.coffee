@@ -39,8 +39,8 @@ class StoreSpy
     @functionCalls.push(new FunctionCall("deleteRecord", id))
     @real.deleteRecord(id)
 
-  fetchRecords: ->
-    @real.fetchRecords()
+  loadRecords: (listener) ->
+    @real.loadRecords(listener)
 
   allFunctionCalls: ->
     if @functionCalls.length then @functionCalls else "No calls"

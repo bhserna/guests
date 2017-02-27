@@ -185,7 +185,10 @@ class AssistanceConfirmationControl
 
 class InvitationsListControl
   constructor: (@app, @store, @display) ->
-    @list = new InvitationsList(@store.fetchRecords())
+    @store.loadRecords(@)
+
+  recordsLoaded: (records) ->
+    @list = new InvitationsList(records)
     @updateDisplay()
 
   updateDisplay: ->
@@ -280,7 +283,9 @@ class NewInvitationControl extends EditInvitationControl
 
 class window.MemoryStore
   constructor: (@records = []) ->
-  fetchRecords: -> @records
+
+  loadRecords: (listener) ->
+    listener.recordsLoaded(@records)
 
   saveRecord: (record) ->
     @records.push(record)
@@ -297,16 +302,21 @@ window.LocalStore =
   fetchRecords: ->
      JSON.parse(localStorage.invitations || "[]")
 
-  _updateRecords: (records) ->
+  updateRecords: (records) ->
     localStorage.invitations = JSON.stringify(records)
 
+  loadRecords: (listener) ->
+    listener.recordsLoaded(@fetchRecords())
+
   saveRecord: (record) ->
-    @_updateRecords @fetchRecords().push(record)
+    records = @fetchRecords()
+    records.push(record)
+    @updateRecords records
 
   updateRecord: (newRecord) ->
-    @_updateRecords _.map @fetchRecords(), (current) ->
+    @updateRecords _.map @fetchRecords(), (current) ->
       if current.id is newRecord.id then newRecord else current
 
   deleteRecord: (id) ->
-    @_updateRecords _.reject @fetchRecords(), (current) ->
+    @updateRecords _.reject @fetchRecords(), (current) ->
       current.id is id
