@@ -139,24 +139,31 @@ get "/lists/:id" do
 end
 
 post "/lists/:list_id/invitations" do
-  content_type :json
   puts "------------------------"
   puts params[:invitation].inspect
+  #puts JSON.parse(params[:invitation]).inspect
   puts "------------------------"
-  Invitations.save_record(params[:list_id], params[:invitation], Invitations::Store)
+  #invitation = JSON.parse(params[:invitation])
+  invitation = params[:invitation]
+  Invitations.save_record(params[:list_id], invitation, Invitations::Store)
 end
 
 patch "/lists/:list_id/invitations" do
-  content_type :json
-  Invitations.update_record(params[:list_id], params[:invitation], Invitations::Store)
+  puts "------------------------"
+  puts params[:invitation].inspect
+  puts params[:invitation]["id"].inspect
+  #puts JSON.parse(params[:invitation]).inspect
+  #puts JSON.parse(params[:invitation])["id"].inspect
+  puts "------------------------"
+  #invitation = JSON.parse(params[:invitation])
+  invitation = params[:invitation]
+  Invitations.update_record(params[:list_id], invitation, Invitations::Store)
 end
 
 delete "/lists/:list_id/invitations/:id" do
-  content_type :json
   Invitations.delete_record(params[:list_id], params[:id], Invitations::Store)
 end
 
 get "/lists/:list_id/invitations" do
-  content_type :json
   Invitations.fetch_records(params[:list_id], Invitations::Store).to_json
 end
