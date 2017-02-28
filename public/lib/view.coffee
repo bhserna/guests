@@ -249,7 +249,7 @@ onAction = (event, selector, callback) ->
     e.preventDefault()
     callback($el = $(this))
 
-app = new GuestsApp(LocalStore, new Page)
+app = new GuestsApp(RemoteStore, new Page)
 
 $ -> $("#invitationTitle").focus()
 

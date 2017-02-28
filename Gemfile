@@ -4,6 +4,7 @@ gem 'activesupport'
 gem 'activerecord'
 gem "sinatra-partial"
 gem "bcrypt"
+gem "json"
 
 group :production do
   gem "pg"

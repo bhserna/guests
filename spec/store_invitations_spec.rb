@@ -1,19 +1,4 @@
-module Invitations
-  def self.save_record(list_id, invitation, store)
-    store.create(
-      list_id: list_id,
-      invitation_id: invitation["id"],
-      raw_data: invitation)
-  end
-
-  def self.update_record(list_id, invitation, store)
-    record = store.find_by_invitation_id(invitation["id"])
-    store.update(record[:id],
-      list_id: list_id,
-      invitation_id: invitation["id"],
-      raw_data: invitation)
-  end
-end
+require_relative "../lib/invitations.rb"
 
 module Invitations
   describe "Store invitations" do
@@ -27,8 +12,12 @@ module Invitations
         @records << record
       end
 
-      def find_by_invitation_id(id)
-        @records.detect { |record| record[:invitation_id] == id }
+      def find_for_list_by_invitation_id(list_id, id)
+        find_for_list(list_id).detect { |record| record[:invitation_id] == id }
+      end
+
+      def find_for_list(list_id)
+        @records.select { |record| record[:list_id] == list_id }
       end
     end
 
@@ -58,7 +47,7 @@ module Invitations
     end
 
     it "updates a record" do
-      invitation = {
+      original = {
         "id" => 1,
         "title" => "Uno",
         "guests" => [
@@ -71,13 +60,13 @@ module Invitations
         "isAssistanceConfirmed" => true
       }
 
-      updated = invitation.merge("title" => "Updated")
+      updated = original.merge("title" => "Updated")
 
       record = {
         id: "record-1234",
         list_id: 1234,
         invitation_id: 1,
-        invitation: invitation
+        raw_data: original
       }
 
       store = FakeStore.new([record])
@@ -89,6 +78,64 @@ module Invitations
       })
 
       Invitations.update_record(1234, updated, store)
+    end
+
+    it "deletes a record" do
+      invitation = {"id" => 1}
+      record = {
+        id: "record-1234",
+        list_id: 1234,
+        invitation_id: 1,
+        raw_data: invitation
+      }
+
+      store = FakeStore.new([record])
+      expect(store).to receive(:delete).with("record-1234")
+      Invitations.delete_record(1234, 1, store)
+    end
+
+    it "fetches all records" do
+      first = {
+        "id" => 1,
+        "title" => "Uno",
+        "guests" => [
+          {"id" => 1, "name" => "Benito"},
+          {"id" => 2, "name" => "Maripaz"}],
+        "phone" => "1234-1234",
+        "email" => "bh@example.com",
+        "isDelivered" => true,
+        "confirmedGuestsCount" => 2,
+        "isAssistanceConfirmed" => true
+      }
+
+      second = {
+        "id" => 2,
+        "title" => "Dos",
+        "guests" => [
+          {"id" => 1, "name" => "Gus"},
+          {"id" => 2, "name" => "Caro"}],
+        "phone" => "11-1234-1234",
+        "email" => "g@example.com",
+        "isDelivered" => false,
+        "confirmedGuestsCount" => 0,
+        "isAssistanceConfirmed" => false
+      }
+
+      records = [{
+        id: "record-1",
+        list_id: 1234,
+        invitation_id: 1,
+        raw_data: first
+      }, {
+        id: "record-2",
+        list_id: 1234,
+        invitation_id: 2,
+        raw_data: second
+      }]
+
+      store = FakeStore.new(records)
+      fetched = Invitations.fetch_records(1234, store)
+      expect(fetched).to eq [first, second]
     end
   end
 end

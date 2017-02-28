@@ -320,3 +320,54 @@ window.LocalStore =
   deleteRecord: (id) ->
     @updateRecords _.reject @fetchRecords(), (current) ->
       current.id is id
+
+
+window.RemoteStore =
+  getListId: ->
+    $("#app").data("listId")
+
+  fetchRecords: ->
+    url = "/lists/#{@getListId()}/invitations"
+    $.getJSON(url).then (records) =>
+      @records = (JSON.parse(record) for record in records)
+
+  loadRecords: (listener) ->
+    @fetchRecords().then =>
+      console.log @records
+      listener.recordsLoaded(@records)
+
+  saveRecord: (record) ->
+    url = "/lists/#{@getListId()}/invitations"
+
+    $.ajax
+      method: "POST"
+      url: url
+      dataType: "json"
+      data:
+        invitation: JSON.stringify(record)
+
+    @records.push(record)
+
+  updateRecord: (newRecord) ->
+    url = "/lists/#{@getListId()}/invitations"
+
+    $.ajax
+      method: "PATCH"
+      url: url
+      dataType: "json"
+      data:
+        invitation: JSON.stringify(newRecord)
+
+    @records = _.map @records, (current) ->
+      if current.id is newRecord.id then newRecord else current
+
+  deleteRecord: (id) ->
+    url = "/lists/#{@getListId()}/invitations/#{id}"
+
+    $.ajax
+      method: "DELETE"
+      url: url
+      dataType: "json"
+
+    @records = _.reject @records, (current) ->
+      current.id is id
