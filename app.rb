@@ -139,24 +139,14 @@ get "/lists/:id" do
 end
 
 post "/lists/:list_id/invitations" do
-  puts "------------------------"
-  puts params[:invitation].inspect
-  #puts JSON.parse(params[:invitation]).inspect
-  puts "------------------------"
-  #invitation = JSON.parse(params[:invitation])
   invitation = params[:invitation]
+  invitation = JSON.parse(invitation)
   Invitations.save_record(params[:list_id], invitation, Invitations::Store)
 end
 
 patch "/lists/:list_id/invitations" do
-  puts "------------------------"
-  puts params[:invitation].inspect
-  puts params[:invitation]["id"].inspect
-  #puts JSON.parse(params[:invitation]).inspect
-  #puts JSON.parse(params[:invitation])["id"].inspect
-  puts "------------------------"
-  #invitation = JSON.parse(params[:invitation])
   invitation = params[:invitation]
+  invitation = JSON.parse(invitation)
   Invitations.update_record(params[:list_id], invitation, Invitations::Store)
 end
 

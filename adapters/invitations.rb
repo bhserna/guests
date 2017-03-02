@@ -20,7 +20,7 @@ module Invitations
       Invitation.update(id, attrs)
     end
 
-    def self.delete(id, attrs)
+    def self.delete(id)
       Invitation.delete(id)
     end
   end

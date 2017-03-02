@@ -329,12 +329,10 @@ window.RemoteStore =
   fetchRecords: ->
     url = "/lists/#{@getListId()}/invitations"
     $.getJSON(url).then (records) =>
-      console.log records
       @records = records
 
   loadRecords: (listener) ->
     @fetchRecords().then =>
-      console.log @records
       listener.recordsLoaded(@records)
 
   saveRecord: (record) ->
@@ -345,7 +343,7 @@ window.RemoteStore =
       url: url
       dataType: "json"
       data:
-        invitation: record
+        invitation: JSON.stringify(record)
 
     @records.push(record)
 
@@ -357,7 +355,7 @@ window.RemoteStore =
       url: url
       dataType: "json"
       data:
-        invitation: newRecord
+        invitation: JSON.stringify(newRecord)
 
     @records = _.map @records, (current) ->
       if current.id is newRecord.id then newRecord else current

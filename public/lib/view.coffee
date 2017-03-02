@@ -207,12 +207,13 @@ view = renderable (data) ->
           p ->
             strong "3. Da click en Guarda invitación"
 
-      if data.list.invitations.length >= 2
-        div ".alert.alert-warning", style: "margin-top: 1em", ->
-          p "Los datos de esta lista solo se guardan en la memoria de tu navegador."
-          p ->
-            span "Para crear listas para tus eventos y compartirlas con los novios"
-            strong " regístrate por solo $20 USD al mes."
+      unless $("#app").data("listId")
+        if data.list.invitations.length >= 2
+          div ".alert.alert-warning", style: "margin-top: 1em", ->
+            p "Los datos de esta lista solo se guardan en la memoria de tu navegador."
+            p ->
+              span "Para crear listas para tus eventos y compartirlas con los novios"
+              strong " regístrate por solo $20 USD al mes."
 
 
 class Page
@@ -249,7 +250,8 @@ onAction = (event, selector, callback) ->
     e.preventDefault()
     callback($el = $(this))
 
-app = new GuestsApp(RemoteStore, new Page)
+store = if $("#app").data("listId") then RemoteStore else LocalStore
+app = new GuestsApp(store, new Page)
 
 $ -> $("#invitationTitle").focus()
 
