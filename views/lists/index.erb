@@ -1,0 +1,27 @@
+<div class="container">
+  <div class="page-header">
+    <a href="<%= to("/lists/new") %>" class="btn btn-default pull-right">Nueva Lista</a>
+    <h1>Tus listas</h1>
+  </div>
+
+  <% if @lists.empty? %>
+    <p class="lead">
+    Hola <%= @user.first_name %> que gusto que empieces a usar simple guest.
+    </p>
+    <p class="lead">
+    Para comenzar a crear tu primera lista da click en el botón "Nueva Lista".
+    </p>
+  <% end %>
+
+  <ul class="list-unstyled row">
+  <% @lists.each do |list| %>
+    <li class="col-md-3">
+      <div class="panel panel-default">
+        <a href="<%= to("/lists/#{list.id}") %>" class="panel-body text-center" style="display: block; cursor: pointer">
+          <h4><%= list.name %></h4>
+        </a>
+      </div>
+    </li>
+  <% end %>
+  </ul>
+</div>
