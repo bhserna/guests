@@ -1,6 +1,7 @@
 {test, module} = QUnit
 first = (list) -> list[0]
 second = (list) -> list[1]
+last = (list) -> _.last(list)
 
 class TestDisplay
   editor: {}
@@ -19,6 +20,31 @@ class TestDisplay
   removeConfirmator: ->
     @confirmator = {}
 
+class FunctionCall
+  constructor: (@name, @params) ->
+
+class StoreSpy
+  constructor: (@real) ->
+    @functionCalls = []
+
+  saveRecord: (record) ->
+    @functionCalls.push(new FunctionCall("saveRecord", record))
+    @real.saveRecord(record)
+
+  updateRecord: (record) ->
+    @functionCalls.push(new FunctionCall("updateRecord", record))
+    @real.updateRecord(record)
+
+  deleteRecord: (id) ->
+    @functionCalls.push(new FunctionCall("deleteRecord", id))
+    @real.deleteRecord(id)
+
+  loadRecords: (listener) ->
+    @real.loadRecords(listener)
+
+  allFunctionCalls: ->
+    if @functionCalls.length then @functionCalls else "No calls"
+
 addInvitation = (app, title, guests, phone, email) ->
   app.addInvitation()
   app.editor.addTitle(title)
@@ -29,10 +55,10 @@ addInvitation = (app, title, guests, phone, email) ->
 
 module "Add guests by invitation", (hooks) ->
   hooks.beforeEach ->
-    store = new MemoryStore
+    @store = new StoreSpy(new MemoryStore)
     @page = new TestDisplay
-    @app = new GuestsApp(store, @page)
-    @editor = @app.addInvitation()
+    @app = new GuestsApp(@store, @page)
+    @app.addInvitation()
 
   test "knows is a new invitation", (assert) ->
     assert.ok @page.editor.isNewInvitation
@@ -42,11 +68,11 @@ module "Add guests by invitation", (hooks) ->
     assert.equal @page.editor.guests.length, 0
     assert.equal @page.list.invitations.length, 0
 
-  test "sets the invitation title", (assert) ->
+  test "set the invitation title", (assert) ->
     @app.editor.addTitle("Serna Moreno")
     assert.equal @page.editor.title, "Serna Moreno"
 
-  test "sets the invitation title and then edit it", (assert) ->
+  test "set the invitation title and then edit it", (assert) ->
     assert.ok @page.editor.isEditingTitle
 
     @app.editor.addTitle("Serna More")
@@ -61,13 +87,13 @@ module "Add guests by invitation", (hooks) ->
     assert.notOk @page.editor.isEditingTitle
     assert.equal @page.editor.title, "Serna Moreno"
 
-  test "adds a guest to the current list", (assert) ->
+  test "add a guest to the new invitation", (assert) ->
     @app.editor.addTitle("Serna Moreno")
     @app.editor.addGuest(name: "Benito Serna")
     assert.equal @page.editor.guests.length, 1
     assert.equal first(@page.editor.guests).name, "Benito Serna"
 
-  test "edit guest from the current list", (assert) ->
+  test "edit guest from the invitation's guest list", (assert) ->
     @app.editor.addTitle("Serna Moreno")
     @app.editor.addGuest(name: "Benito")
     getGuest = => first(@page.editor.guests)
@@ -79,7 +105,7 @@ module "Add guests by invitation", (hooks) ->
     @app.editor.updateGuest(getGuest().id, name: "Benito Serna")
     assert.equal getGuest().name, "Benito Serna"
 
-  test "delete guest from the current list", (assert) ->
+  test "delete guest from the new invitation", (assert) ->
     @app.editor.addTitle("Serna Moreno")
     @app.editor.addGuest(name: "Benito")
     getGuest = => first(@page.editor.guests)
@@ -87,7 +113,7 @@ module "Add guests by invitation", (hooks) ->
     @app.editor.deleteGuest(getGuest().id)
     assert.equal @page.editor.guests.length, 0
 
-  test "add more than one guests to the current list", (assert) ->
+  test "add more than one guests to the invitation", (assert) ->
     @app.editor.addTitle("Serna Moreno")
     @app.editor.addGuest(name: "Benito Serna")
     @app.editor.addGuest(name: "Maripaz Moreno")
@@ -105,16 +131,6 @@ module "Add guests by invitation", (hooks) ->
     assert.notOk @page.editor.isEditingPhone
     assert.equal @page.editor.phone, "12341234"
 
-  test "commits the added phone to the store", (assert) ->
-    @app.editor.addTitle("Serna Moreno")
-    @app.editor.turnOnPhoneEdition()
-    @app.editor.updatePhone("12341234")
-    @app.editor.commit()
-    invitation = first @page.list.invitations
-
-    assert.equal @page.list.invitations.length, 1
-    assert.equal invitation.phone, "12341234"
-
   test "add email", (assert) ->
     @app.editor.addTitle("Serna Moreno")
     assert.notOk @page.editor.isEditingEmail
@@ -126,41 +142,38 @@ module "Add guests by invitation", (hooks) ->
     assert.notOk @page.editor.isEditingEmail
     assert.equal @page.editor.email, "b@e.com"
 
-  test "commits the added email to the store", (assert) ->
-    @app.editor.addTitle("Serna Moreno")
-    @app.editor.turnOnEmailEdition()
-    @app.editor.updateEmail("a@b.com")
-    @app.editor.commit()
+  test "after commit the invitation is added to the list", (assert) ->
+    addInvitation(@app, "Inv 1", ["guest1", "guest2"], "1234", "b@g.com")
     invitation = first @page.list.invitations
-
     assert.equal @page.list.invitations.length, 1
-    assert.equal invitation.email, "a@b.com"
-
-  test "commits the added guests to the store", (assert) ->
-    @app.editor.addTitle("Serna Moreno")
-    @app.editor.addGuest(name: "Benito Serna")
-    @app.editor.addGuest(name: "Maripaz Moreno")
-    @app.editor.commit()
-    assert.equal @page.list.invitations.length, 1
-
-    invitation = first @page.list.invitations
-    assert.equal invitation.title, "Serna Moreno"
-    assert.equal first(invitation.guests).name, "Benito Serna"
-    assert.equal second(invitation.guests).name, "Maripaz Moreno"
+    assert.equal invitation.title, "Inv 1"
+    assert.equal first(invitation.guests).name, "guest1"
+    assert.equal second(invitation.guests).name, "guest2"
+    assert.equal invitation.phone, "1234"
+    assert.equal invitation.email, "b@g.com"
 
   test "after commits the editor is cleaned", (assert) ->
-    @app.editor.addTitle("Serna Moreno")
-    @app.editor.addGuest(name: "Benito Serna")
-    @app.editor.addGuest(name: "Maripaz Moreno")
-    @app.editor.commit()
+    addInvitation(@app, "Inv 1", ["guest1", "guest2"], "1234", "b@g.com")
     assert.equal @page.editor.title, ""
     assert.equal @page.editor.guests.length, 0
 
+  test "after commit the invitation is sended to the store", (assert) ->
+    addInvitation(@app, "Inv 1", ["guest1", "guest2"], "1234", "b@g.com")
+    call = first @store.allFunctionCalls()
+    assert.equal call.name, "saveRecord"
+
+    invitation = call.params
+    assert.equal invitation.title, "Inv 1"
+    assert.equal first(invitation.guests).name, "guest1"
+    assert.equal second(invitation.guests).name, "guest2"
+    assert.equal invitation.phone, "1234"
+    assert.equal invitation.email, "b@g.com"
+
 module "Edit invitation", (hooks) ->
   hooks.beforeEach ->
-    store = new MemoryStore
+    @store = new StoreSpy(new MemoryStore)
     @page = new TestDisplay
-    @app = new GuestsApp(store, @page)
+    @app = new GuestsApp(@store, @page)
     addInvitation(@app, "Inv 1", ["guest1", "guest2"], "1234", "b@g.com")
 
   test "knows is not a new invitation", (assert) ->
@@ -196,6 +209,21 @@ module "Edit invitation", (hooks) ->
     assert.equal first(invitation.guests).name, "Benito Serna"
     assert.equal second(invitation.guests).name, "Maripaz Moreno"
 
+  test "after commit it updates the invitation in the store", (assert) ->
+    invitation = first @page.list.invitations
+    @app.list.editInvitation(invitation.id)
+    @app.editor.addTitle("Serna Moreno")
+    @app.editor.updateGuest(first(@page.editor.guests).id, name: "Benito Serna")
+    @app.editor.updateGuest(second(@page.editor.guests).id, name: "Maripaz Moreno")
+    @app.editor.commit()
+
+    call = last @store.allFunctionCalls()
+    assert.equal call.name, "updateRecord"
+    invitation = call.params
+    assert.equal invitation.title, "Serna Moreno"
+    assert.equal first(invitation.guests).name, "Benito Serna"
+    assert.equal second(invitation.guests).name, "Maripaz Moreno"
+
   test "after commit it returns to adding invitation mode", (assert) ->
     invitation = first @page.list.invitations
     @app.list.editInvitation(invitation.id)
@@ -211,9 +239,9 @@ module "Edit invitation", (hooks) ->
 
 module "Delete invitation", (hooks) ->
   hooks.beforeEach ->
-    store = new MemoryStore
+    @store = new StoreSpy(new MemoryStore)
     @page = new TestDisplay
-    @app = new GuestsApp(store, @page)
+    @app = new GuestsApp(@store, @page)
     addInvitation(@app, "Inv 1", ["guest1", "guest2"])
 
   test "removes the invitation", (assert) ->
@@ -221,11 +249,18 @@ module "Delete invitation", (hooks) ->
     @app.list.deleteInvitation(invitation.id)
     assert.equal @page.list.invitations.length, 0
 
+  test "removes the invitation in the store", (assert) ->
+    invitation = first @page.list.invitations
+    @app.list.deleteInvitation(invitation.id)
+    call = last @store.allFunctionCalls()
+    assert.equal call.name, "deleteRecord"
+    assert.equal call.params, invitation.id
+
 module "Show invitations list", (hooks) ->
   hooks.beforeEach ->
-    store = new MemoryStore
+    @store = new StoreSpy(new MemoryStore)
     @page = new TestDisplay
-    @app = new GuestsApp(store, @page)
+    @app = new GuestsApp(@store, @page)
     addInvitation(@app, "Inv 1", ["guest1", "guest2"], "23452345", "a@b.com")
     addInvitation(@app, "Inv 2", ["guest1", "guest2", "guest3"])
     addInvitation(@app, "Inv 3", ["guest1"])
@@ -272,9 +307,9 @@ module "Show invitations list", (hooks) ->
 
 module "Confirm invitation delivery", (hooks) ->
   hooks.beforeEach ->
-    store = new MemoryStore
+    @store = new StoreSpy(new MemoryStore)
     @page = new TestDisplay
-    @app = new GuestsApp(store, @page)
+    @app = new GuestsApp(@store, @page)
     addInvitation(@app, "Inv 1", ["guest1", "guest2"])
     addInvitation(@app, "Inv 2", ["guest1", "guest2"])
     addInvitation(@app, "Inv 3", ["guest1", "guest2"])
@@ -287,6 +322,10 @@ module "Confirm invitation delivery", (hooks) ->
     @app.list.confirmInvitationDelivery(invitation().id)
     assert.ok invitation().isDelivered
     assert.equal @page.list.totalDeliveredInvitations(), 1
+
+    call = last @store.allFunctionCalls()
+    assert.equal call.name, "updateRecord"
+    assert.equal call.params, invitation()
 
   test "undo", (assert) ->
     invitation = => first @page.list.invitations
@@ -301,11 +340,15 @@ module "Confirm invitation delivery", (hooks) ->
     assert.notOk invitation().isDelivered
     assert.equal @page.list.totalDeliveredInvitations(), 0
 
+    call = last @store.allFunctionCalls()
+    assert.equal call.name, "updateRecord"
+    assert.equal call.params, invitation()
+
 module "Confirm invitation invitation assistance", (hooks) ->
   hooks.beforeEach ->
-    store = new MemoryStore
+    @store = new StoreSpy(new MemoryStore)
     @page = new TestDisplay
-    @app = new GuestsApp(store, @page)
+    @app = new GuestsApp(@store, @page)
     addInvitation(@app, "Inv 1", ["guest1", "guest2"], "12341234")
 
   test "unstarted", (assert) ->
@@ -330,6 +373,10 @@ module "Confirm invitation invitation assistance", (hooks) ->
     assert.ok listInvitation().isAssistanceConfirmed
     assert.equal listInvitation().confirmedGuestsCount, 2
     assert.equal @page.list.totalConfirmedGuests(), 2
+
+    call = last @store.allFunctionCalls()
+    assert.equal call.name, "updateRecord"
+    assert.equal call.params, listInvitation()
 
   test "confirm without value", (assert) ->
     listInvitation = => first @page.list.invitations

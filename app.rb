@@ -1,67 +1,159 @@
 require "sinatra"
 require 'sinatra/partial'
+
 require_relative "lib/leads"
+require_relative "lib/users"
+require_relative "lib/lists"
+require_relative "lib/invitations"
+
 require_relative "db/config"
-require_relative "store"
+require_relative "adapters"
+
+require_relative "helpers/form_helpers"
+require_relative "helpers/session_helpers"
 
 set :partial_template_engine, :erb
+enable :sessions
+helpers FormHelpers, SessionHelpers
 
-store = Store::Leads
-
-get "/" do
-  erb :wedding_planners_home, layout: :home_layout
+def session_store
+  Users::SessionStore.new(session)
 end
 
-get "/lista-de-invitados" do
-  erb :guests
+def users_config
+  {store: Users::Store,
+   encryptor: Users::Encryptor,
+   session_store: session_store}
 end
 
 get "/tests" do
   erb :tests, layout: false
 end
 
-get "/registro" do
-  @form = Leads.register_form
-  erb :"lead_register/new"
+get "/" do
+  erb :wedding_planners_home, layout: :home_layout
 end
 
-post '/registro' do
-  response = Leads.register_lead(params, store)
+get "/demo" do
+  erb :guests
+end
 
-  if response.success?
-    redirect to("/registro_exitoso")
+get "/registration" do
+  redirect to("/lists") if Users.user?(users_config)
+
+  @form = Users.register_form
+  erb :"users/registration"
+end
+
+post '/registration' do
+  redirect to("/lists") if Users.user?(users_config)
+  registration = Users.register_user(params, users_config)
+
+  if registration.success?
+    redirect to("/lists")
   else
-    @form = response.form
-    erb :"lead_register/new"
+    @form = registration.form
+    erb :"users/registration"
   end
 end
 
-get "/registro_exitoso" do
-  erb :"lead_register/registered"
+post "/sign_out" do
+  Users.sign_out(users_config)
+  redirect to("/")
 end
 
-get "/registro_articulos" do
-  @form = Leads.register_form
-  erb :"lead_register/new_from_article"
+get "/login" do
+  redirect to("/lists") if Users.user?(users_config)
+
+  @form = Users.login_form
+  erb :"users/login"
 end
 
-post '/registro_articulos' do
-  response = Leads.register_lead(params, store)
+post "/login" do
+  redirect to("/lists") if Users.user?(users_config)
+  login = Users.login(params, users_config)
 
-  if response.success?
-    redirect to("/registro_articulos_exitoso")
+  if login.success?
+    redirect to("/lists")
   else
-    @form = response.form
-    erb :"lead_register/new_from_article"
+    @form = Users.login_form
+    @error = login.error
+    erb :"users/login"
   end
 end
 
-get "/registro_articulos_exitoso" do
-  erb :"lead_register/registered_from_article"
+get "/articles/registration" do
+  @form = Leads.register_form
+  erb :"articles/registration"
+end
+
+post '/articles/registration' do
+  response = Leads.register_lead(params, Leads::Store)
+
+  if response.success?
+    redirect to("/articles/registration_success")
+  else
+    @form = response.form
+    erb :"articles/registration"
+  end
+end
+
+get "/articles/registration_success" do
+  erb :"articles/registration_success"
 end
 
 get "/articles/preguntas-para-reducir-su-lista-de-invitados" do
   @page_title = "Preguntas para reducir su lista de invitados"
   @meta_description = "Una pequeña guía de preguntas para ayudarlos a reducir su lista de invitados"
   erb :"articles/article-1", layout: :home_layout
+end
+
+get "/lists" do
+  redirect to("/registration") if Users.guest?(users_config)
+  @user = users_config.fetch(:store).find(session_store.user_id)
+  @lists = Lists.lists_of_user(Lists::Store, session_store)
+  erb :"lists/index"
+end
+
+get "/lists/new" do
+  redirect to("/") if Users.guest?(users_config)
+  @form = Lists.new_list_form
+  erb :"lists/new"
+end
+
+post "/lists" do
+  redirect to("/") if Users.guest?(users_config)
+  response = Lists.create_list(params, Lists::Store, session_store, Lists::IdGenerator)
+
+  if response.success?
+    redirect to("/lists")
+  else
+    @form = response.form
+    erb :"lists/new"
+  end
+end
+
+get "/lists/:id" do
+  redirect to("/") if Users.guest?(users_config)
+  erb :"lists/show"
+end
+
+post "/lists/:list_id/invitations" do
+  invitation = params[:invitation]
+  invitation = JSON.parse(invitation)
+  Invitations.save_record(params[:list_id], invitation, Invitations::Store)
+end
+
+patch "/lists/:list_id/invitations" do
+  invitation = params[:invitation]
+  invitation = JSON.parse(invitation)
+  Invitations.update_record(params[:list_id], invitation, Invitations::Store)
+end
+
+delete "/lists/:list_id/invitations/:id" do
+  Invitations.delete_record(params[:list_id], params[:id], Invitations::Store)
+end
+
+get "/lists/:list_id/invitations" do
+  Invitations.fetch_records(params[:list_id], Invitations::Store).to_json
 end

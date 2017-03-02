@@ -1,7 +1,5 @@
-require "active_record"
-
-module Store
-  module Leads
+module Leads
+  module Store
     class Lead < ActiveRecord::Base
     end
 

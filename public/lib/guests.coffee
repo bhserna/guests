@@ -78,7 +78,8 @@ class DeliverableInvitation extends Invitation
     @isDelivered = false
 
 class InvitationsList
-  constructor: (@invitations) ->
+  constructor: (records) ->
+    @invitations = (@buildInvitation(record) for record in records)
 
   findInvitation: (id) ->
     _.findWhere(@invitations, id: id)
@@ -87,11 +88,14 @@ class InvitationsList
     invitation.id = @invitations.length + 1
     invitation = @buildInvitation(invitation)
     @invitations.push(invitation)
+    invitation
 
   updateInvitation: (invitation) ->
     byId = _.indexBy(@invitations, "id")
-    byId[invitation.id] = @buildInvitation(invitation)
+    invitation = @buildInvitation(invitation)
+    byId[invitation.id] = invitation
     @invitations = _.values(byId)
+    invitation
 
   deleteInvitation: (id) ->
     @invitations = _.reject(@invitations, (invitation) -> invitation.id is id)
@@ -181,45 +185,44 @@ class AssistanceConfirmationControl
 
 class InvitationsListControl
   constructor: (@app, @store, @display) ->
-    @invitations = @store.fetchRecords()
-    @list = new InvitationsList(@invitations)
+    @store.loadRecords(@)
+
+  recordsLoaded: (records) ->
+    @list = new InvitationsList(records)
     @updateDisplay()
 
   updateDisplay: ->
     @display.renderList(@list)
-
-  updateStore: ->
-    @store.updateRecords(@list.invitations)
 
   findInvitation: (id) ->
     @list.findInvitation(id)
 
   deleteInvitation: (id) ->
     @list.deleteInvitation(id)
-    @updateStore()
+    @store.deleteRecord(id)
     @updateDisplay()
 
   addInvitation: (title, guests) ->
-    @list.addInvitation(title, guests)
-    @updateStore()
+    invitation = @list.addInvitation(title, guests)
+    @store.saveRecord(invitation)
     @updateDisplay()
 
   editInvitation: (id) ->
     @app.editInvitation(@findInvitation(id))
 
   updateInvitation: (id, title, guests) ->
-    @list.updateInvitation(id, title, guests)
-    @updateStore()
+    invitation = @list.updateInvitation(id, title, guests)
+    @store.updateRecord(invitation)
     @updateDisplay()
 
   confirmInvitationDelivery: (id) ->
-    @list.confirmInvitationDelivery(id)
-    @updateStore()
+    invitation = @list.confirmInvitationDelivery(id)
+    @store.updateRecord(invitation)
     @updateDisplay()
 
   unconfirmInvitationDelivery: (id) ->
-    @list.unconfirmInvitationDelivery(id)
-    @updateStore()
+    invitation = @list.unconfirmInvitationDelivery(id)
+    @store.updateRecord(invitation)
     @updateDisplay()
 
   startInvitationAssistanceConfirmation: (id) ->
@@ -280,8 +283,20 @@ class NewInvitationControl extends EditInvitationControl
 
 class window.MemoryStore
   constructor: (@records = []) ->
-  fetchRecords: -> @records
-  updateRecords: (records) -> @records = records
+
+  loadRecords: (listener) ->
+    listener.recordsLoaded(@records)
+
+  saveRecord: (record) ->
+    @records.push(record)
+
+  updateRecord: (newRecord) ->
+    @records = _.map @records, (current) ->
+      if current.id is newRecord.id then newRecord else current
+
+  deleteRecord: (id) ->
+    @records = _.reject @records, (current) ->
+      current.id is id
 
 window.LocalStore =
   fetchRecords: ->
@@ -289,3 +304,69 @@ window.LocalStore =
 
   updateRecords: (records) ->
     localStorage.invitations = JSON.stringify(records)
+
+  loadRecords: (listener) ->
+    listener.recordsLoaded(@fetchRecords())
+
+  saveRecord: (record) ->
+    records = @fetchRecords()
+    records.push(record)
+    @updateRecords records
+
+  updateRecord: (newRecord) ->
+    @updateRecords _.map @fetchRecords(), (current) ->
+      if current.id is newRecord.id then newRecord else current
+
+  deleteRecord: (id) ->
+    @updateRecords _.reject @fetchRecords(), (current) ->
+      current.id is id
+
+
+window.RemoteStore =
+  getListId: ->
+    $("#app").data("listId")
+
+  fetchRecords: ->
+    url = "/lists/#{@getListId()}/invitations"
+    $.getJSON(url).then (records) =>
+      @records = records
+
+  loadRecords: (listener) ->
+    @fetchRecords().then =>
+      listener.recordsLoaded(@records)
+
+  saveRecord: (record) ->
+    url = "/lists/#{@getListId()}/invitations"
+
+    $.ajax
+      method: "POST"
+      url: url
+      dataType: "json"
+      data:
+        invitation: JSON.stringify(record)
+
+    @records.push(record)
+
+  updateRecord: (newRecord) ->
+    url = "/lists/#{@getListId()}/invitations"
+
+    $.ajax
+      method: "PATCH"
+      url: url
+      dataType: "json"
+      data:
+        invitation: JSON.stringify(newRecord)
+
+    @records = _.map @records, (current) ->
+      if current.id is newRecord.id then newRecord else current
+
+  deleteRecord: (id) ->
+    url = "/lists/#{@getListId()}/invitations/#{id}"
+
+    $.ajax
+      method: "DELETE"
+      url: url
+      dataType: "json"
+
+    @records = _.reject @records, (current) ->
+      current.id is id
