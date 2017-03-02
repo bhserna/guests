@@ -34,23 +34,23 @@ get "/" do
   erb :wedding_planners_home, layout: :home_layout
 end
 
-get "/lista-de-invitados" do
+get "/demo" do
   erb :guests
 end
 
 get "/registration" do
-  redirect to("/home") if Users.user?(users_config)
+  redirect to("/lists") if Users.user?(users_config)
 
   @form = Users.register_form
   erb :"users/registration"
 end
 
 post '/registration' do
-  redirect to("/home") if Users.user?(users_config)
+  redirect to("/lists") if Users.user?(users_config)
   registration = Users.register_user(params, users_config)
 
   if registration.success?
-    redirect to("/home")
+    redirect to("/lists")
   else
     @form = registration.form
     erb :"users/registration"
@@ -63,18 +63,18 @@ post "/sign_out" do
 end
 
 get "/login" do
-  redirect to("/home") if Users.user?(users_config)
+  redirect to("/lists") if Users.user?(users_config)
 
   @form = Users.login_form
   erb :"users/login"
 end
 
 post "/login" do
-  redirect to("/home") if Users.user?(users_config)
+  redirect to("/lists") if Users.user?(users_config)
   login = Users.login(params, users_config)
 
   if login.success?
-    redirect to("/home")
+    redirect to("/lists")
   else
     @form = Users.login_form
     @error = login.error
@@ -108,11 +108,11 @@ get "/articles/preguntas-para-reducir-su-lista-de-invitados" do
   erb :"articles/article-1", layout: :home_layout
 end
 
-get "/home" do
-  redirect to("/") if Users.guest?(users_config)
+get "/lists" do
+  redirect to("/registration") if Users.guest?(users_config)
   @user = users_config.fetch(:store).find(session_store.user_id)
   @lists = Lists.lists_of_user(Lists::Store, session_store)
-  erb :user_home
+  erb :"lists/index"
 end
 
 get "/lists/new" do
@@ -126,7 +126,7 @@ post "/lists" do
   response = Lists.create_list(params, Lists::Store, session_store, Lists::IdGenerator)
 
   if response.success?
-    redirect to("/home")
+    redirect to("/lists")
   else
     @form = response.form
     erb :"lists/new"
