@@ -39,15 +39,15 @@
             </li>
           </ul>
           <% if user_signed_in? %>
-            <form class="navbar-form navbar-right" method="post" action="<%= to("/sign_out") %>">
+            <form class="navbar-form navbar-right" method="post" action="<%= to("/users/sign_out") %>">
               <button type="submit" class="btn btn-link">Salir</button>
             </form>
           <% else %>
-            <a href="<%= to("/registration") %>" class="btn btn-primary navbar-btn navbar-right">
+            <a href="<%= to("/users/registration") %>" class="btn btn-primary navbar-btn navbar-right">
               Registrarme
             </a>
             <ul class="nav navbar-nav navbar-right">
-              <li><a href="<%= to("/login") %>">Iniciar Sesión</a></li>
+              <li><a href="<%= to("/users/login") %>">Iniciar Sesión</a></li>
             </ul>
           <% end %>
         </div>
