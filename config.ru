@@ -1,2 +1,2 @@
-require './app'
-run App
+require './router'
+run Router
