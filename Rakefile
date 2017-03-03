@@ -1,4 +1,4 @@
-require "./app"
+require "./router"
 require "active_record"
 require "active_support/all"
 
