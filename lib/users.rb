@@ -29,6 +29,21 @@ module Users
     !config.fetch(:session_store).user_id?
   end
 
+  def self.get_current_user(config)
+    store = config.fetch(:store)
+    session_store = config.fetch(:session_store)
+    User.new(store.find(session_store.user_id))
+  end
+
+  class User
+    attr_reader :id, :first_name
+
+    def initialize(data)
+      @id = data[:id]
+      @first_name = data[:first_name]
+    end
+  end
+
   module Login
     def self.form
       Form.new

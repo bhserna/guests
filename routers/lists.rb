@@ -1,8 +1,8 @@
 class ListsRouter < BaseRouter
   get "/lists" do
     redirect to("/users/registration") if Users.guest?(users_config)
-    @user = users_config.fetch(:store).find(session_store.user_id)
-    @lists = Lists.lists_of_user(Lists::Store, session_store)
+    @user = Users.get_current_user(users_config)
+    @lists = Lists.lists_of_user(@user.id, Lists::Store)
     erb :"lists/index"
   end
 
@@ -14,7 +14,8 @@ class ListsRouter < BaseRouter
 
   post "/lists" do
     redirect to("/") if Users.guest?(users_config)
-    response = Lists.create_list(params, Lists::Store, session_store, Lists::IdGenerator)
+    user = Users.get_current_user(users_config)
+    response = Lists.create_list(user.id, params, Lists::Store, Lists::IdGenerator)
 
     if response.success?
       redirect to("/lists")
