@@ -1,5 +1,4 @@
-require_relative "../lib/lists.rb"
-require_relative "../adapters"
+require_relative "../../lib/lists.rb"
 
 RSpec.describe "Show all lists of user" do
   class FakeStore
@@ -12,16 +11,12 @@ RSpec.describe "Show all lists of user" do
     end
   end
 
-  def lists_of_user(store, session_store)
-    Lists.lists_of_user(store, session_store)
+  def lists_of_user(user_id, store)
+    Lists.lists_of_user(user_id, store)
   end
 
   def list_with(data)
     data
-  end
-
-  def session_store_with(session)
-    Users::SessionStore.new(session)
   end
 
   def store_with(records)
@@ -29,14 +24,14 @@ RSpec.describe "Show all lists of user" do
   end
 
   it "has all the records for the current user" do
-    session_store = session_store_with(user_id: "1234")
+    user_id = "1234"
     store = store_with([
       list_with(list_id: 1, user_id: "1234", name: "Uno"),
       list_with(list_id: 2, user_id: "1234", name: "Dos"),
       list_with(list_id: 3, user_id: "other", name: "Tres")
     ])
 
-    first, second = lists_of_user(store, session_store)
+    first, second = lists_of_user(user_id, store)
     expect(first.id).to eq 1
     expect(first.name).to eq "Uno"
 

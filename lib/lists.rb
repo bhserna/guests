@@ -5,14 +5,14 @@ module Lists
     Form.new
   end
 
-  def self.create_list(data, store, session_store, id_generator)
+  def self.create_list(user_id, data, store, id_generator)
     form = Form.new(data)
     errors = Validator.validate(form)
 
     if errors.empty?
       store.save(
         list_id: id_generator.generate_id,
-        user_id: session_store.user_id,
+        user_id: user_id,
         name: data["name"])
       Success
     else
@@ -21,9 +21,9 @@ module Lists
     end
   end
 
-  def self.lists_of_user(store, session_store)
+  def self.lists_of_user(user_id, store)
     store
-      .find_all_by_user_id(session_store.user_id)
+      .find_all_by_user_id(user_id)
       .map { |record| List.new(record) }
   end
 
