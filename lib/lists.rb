@@ -21,9 +21,9 @@ module Lists
     end
   end
 
-  def self.lists_of_user(store, session_store)
+  def self.lists_of_user(user_id, store)
     store
-      .find_all_by_user_id(session_store.user_id)
+      .find_all_by_user_id(user_id)
       .map { |record| List.new(record) }
   end
 
