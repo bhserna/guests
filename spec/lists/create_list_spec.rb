@@ -1,4 +1,4 @@
-require_relative "../lib/lists.rb"
+require_relative "../../lib/lists.rb"
 
 RSpec.describe "Create list" do
   class DummyStore

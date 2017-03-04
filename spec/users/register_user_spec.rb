@@ -1,4 +1,4 @@
-require_relative "../lib/users.rb"
+require_relative "../../lib/users.rb"
 
 RSpec.describe "Register user" do
   class DummyStore

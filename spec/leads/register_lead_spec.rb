@@ -1,4 +1,4 @@
-require_relative "../lib/leads.rb"
+require_relative "../../lib/leads.rb"
 
 RSpec.describe "Register lead" do
   class DummyStore

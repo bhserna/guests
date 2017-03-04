@@ -1,4 +1,4 @@
-require_relative "../lib/invitations.rb"
+require_relative "../../lib/invitations.rb"
 
 module Invitations
   describe "Store invitations" do

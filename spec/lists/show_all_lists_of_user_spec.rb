@@ -1,4 +1,4 @@
-require_relative "../lib/lists.rb"
+require_relative "../../lib/lists.rb"
 
 RSpec.describe "Show all lists of user" do
   class FakeStore
