@@ -5,14 +5,14 @@ module Lists
     Form.new
   end
 
-  def self.create_list(data, store, session_store, id_generator)
+  def self.create_list(user_id, data, store, id_generator)
     form = Form.new(data)
     errors = Validator.validate(form)
 
     if errors.empty?
       store.save(
         list_id: id_generator.generate_id,
-        user_id: session_store.user_id,
+        user_id: user_id,
         name: data["name"])
       Success
     else
