@@ -3,6 +3,7 @@ require "securerandom"
 module Lists
   module Store
     class List < ActiveRecord::Base
+      serialize :people_with_access, Array
     end
 
     def self.save(record)

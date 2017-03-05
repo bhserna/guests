@@ -1,0 +1,33 @@
+<div class="container">
+  <div class="page-header">
+    <div class="pull-right">
+      <a href="<%= to("/lists/#{@details.list_id}") %>" class="btn btn-default">Regresar a lista <em><%= @details.list_name %></em></a>
+      <a href="<%= to("/lists/#{@details.list_id}/access_control/add_person") %>" class="btn btn-primary">Agregar persona</a>
+    </div>
+    <h1>Control de accesso</h1>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Roll</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @details.people_with_access.each do |person| %>
+        <tr>
+          <td><%= person.name %></td>
+          <td><%= person.email %></td>
+          <td><%= person.wedding_roll %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <p class="text-info">
+  <strong>Agrega a las personas que quieras dar accesso a esta lista</strong> e invítalas a registrarse Simple Guest List,
+  con el mismo email para que puedan acceder a la lista en su sección de <em>Listas compartidas</em>.
+  </p>
+</div>
