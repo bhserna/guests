@@ -175,6 +175,39 @@ RSpec.describe "Access control" do
 
         Lists.give_access_to_person(list_id, person_params, store)
       end
+
+      it "returns success" do
+        record = {list_id: list_id, people_with_access: []}
+        store = store_with([record])
+        response = Lists.give_access_to_person(list_id, person_params, store)
+        expect(response).to be_success
+      end
+    end
+
+    describe "without data" do
+      attr_reader :list_id, :person_params
+
+      before do
+        @list_id = "list-id-1234"
+        @person_params = {}
+      end
+
+      it "does not return success" do
+        record = {list_id: list_id, people_with_access: []}
+        store = store_with([record])
+        response = Lists.give_access_to_person(list_id, person_params, store)
+        expect(response).not_to be_success
+      end
+
+      it "returns the errors" do
+        record = {list_id: list_id, people_with_access: []}
+        store = store_with([record])
+        response = Lists.give_access_to_person(list_id, person_params, store)
+        expect(response.form.errors[:first_name]).to eq "no puede estar en blanco"
+        expect(response.form.errors[:last_name]).to eq "no puede estar en blanco"
+        expect(response.form.errors[:email]).to eq "no puede estar en blanco"
+        expect(response.form.errors[:wedding_roll]).to eq "no puede estar en blanco"
+      end
     end
   end
 end

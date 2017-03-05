@@ -10,6 +10,10 @@ module Lists
       List.create(record)
     end
 
+    def self.update(list_id, attrs)
+      find_by_list_id(list_id).update(attrs)
+    end
+
     def self.find_all_by_user_id(user_id)
       List.where(user_id: user_id)
     end

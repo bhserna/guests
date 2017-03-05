@@ -50,9 +50,27 @@ class ListsRouter < BaseRouter
     Invitations.fetch_records(params[:list_id], Invitations::Store).to_json
   end
 
-  get "/lists/:list_id/access_control" do
+  get "/lists/:list_id/access" do
     @details = Lists.current_access_details(params[:list_id], lists_store)
-    erb :"lists/access_control"
+    erb :"lists/access"
+  end
+
+  get "/lists/:list_id/access/new" do
+    @form = Lists.give_access_form
+    @details = Lists.current_access_details(params[:list_id], lists_store)
+    erb :"lists/new_access"
+  end
+
+  post "/lists/:list_id/access" do
+    @details = Lists.current_access_details(params[:list_id], lists_store)
+    response = Lists.give_access_to_person(params[:list_id], params, lists_store)
+
+    if response.success?
+      redirect to("/lists/#{@details.list_id}/access")
+    else
+      @form = response.form
+      erb :"lists/new_access"
+    end
   end
 
   private
