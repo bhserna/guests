@@ -73,6 +73,24 @@ class ListsRouter < BaseRouter
     end
   end
 
+  get "/lists/:list_id/access/:id/edit" do
+    @form = Lists.edit_access_form(params[:list_id], params[:id], lists_store)
+    @details = Lists.current_access_details(params[:list_id], lists_store)
+    erb :"lists/edit_access"
+  end
+
+  post "/lists/:list_id/access/:id" do
+    @details = Lists.current_access_details(params[:list_id], lists_store)
+    response = Lists.update_access_for_person(params[:list_id], params[:id], params, lists_store)
+
+    if response.success?
+      redirect to("/lists/#{@details.list_id}/access")
+    else
+      @form = response.form
+      erb :"lists/edit_access"
+    end
+  end
+
   private
 
   def lists_store

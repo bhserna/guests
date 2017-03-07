@@ -9,15 +9,41 @@ module Lists
     end
 
     def self.give_access_to_person(list_id, person_params, store)
-      form = GiveAccessForm.new(PersonWithAccess.new(person_params))
-      errors = Validator.validate(form)
+      person = PersonWithAccess.new(person_params)
+      errors = Validator.validate(person)
 
       if errors.empty?
         current = current_access_details(list_id, store).people_with_access
-        people = current + [PersonWithAccess.new(person_params)]
+        people = current + [person]
         store.update(list_id, people_with_access: people.map(&:to_h))
         Success
       else
+        form = GiveAccessForm.new(person)
+        form.add_errors(errors)
+        ErrorWithForm.new(form)
+      end
+    end
+
+    def self.edit_access_form(list_id, id, store)
+      GiveAccessForm.new(
+        current_access_details(list_id, store)
+        .people_with_access
+        .detect { |person| person.id == id }
+        .to_person
+      )
+    end
+
+    def self.update_access_for_person(list_id, id, person_params, store)
+      people = current_access_details(list_id, store).people_with_access.map(&:to_person)
+      person = people.detect { |person| person.id == id }.update(person_params)
+      errors = Validator.validate(person)
+
+      if errors.empty?
+        people = people.map { |p| p.id == person.id && person || p }
+        store.update(list_id, people_with_access: people.map(&:to_h))
+        Success
+      else
+        form = GiveAccessForm.new(person)
         form.add_errors(errors)
         ErrorWithForm.new(form)
       end
@@ -88,12 +114,17 @@ module Lists
       def wedding_roll
         WEDDING_ROLL_OPTIONS[super.to_sym]
       end
+
+      def to_person
+        __getobj__
+      end
     end
 
     class PersonWithAccess
-      attr_reader :first_name, :last_name, :email, :wedding_roll
+      attr_reader :id, :first_name, :last_name, :email, :wedding_roll
 
       def initialize(data = {})
+        @id = get_value(data, :id) || SecureRandom.uuid
         @first_name = get_value(data, :first_name)
         @last_name = get_value(data, :last_name)
         @email = get_value(data, :email)
@@ -104,8 +135,12 @@ module Lists
         "#{first_name} #{last_name}"
       end
 
+      def update(data)
+        self.class.new(data.merge(id: id))
+      end
+
       def to_h
-        [:first_name, :last_name, :email, :wedding_roll]
+        [:id, :first_name, :last_name, :email, :wedding_roll]
           .map { |key| [key, send(key)] }
           .to_h
       end

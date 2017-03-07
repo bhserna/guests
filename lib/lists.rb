@@ -54,4 +54,12 @@ module Lists
   def self.give_access_to_person(*args)
     AccessControl.give_access_to_person(*args)
   end
+
+  def self.edit_access_form(*args)
+    AccessControl.edit_access_form(*args)
+  end
+
+  def self.update_access_for_person(*args)
+    AccessControl.update_access_for_person(*args)
+  end
 end

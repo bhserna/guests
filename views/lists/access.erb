@@ -18,6 +18,7 @@
         <th>Nombre</th>
         <th>Email</th>
         <th>Roll</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
@@ -26,6 +27,11 @@
           <td><%= person.name %></td>
           <td><%= person.email %></td>
           <td><%= person.wedding_roll %></td>
+          <td class="text-right">
+            <a href="<%= to("/lists/#{@details.list_id}/access/#{person.id}/edit") %>" class="btn btn-link">
+              <span class="glyphicon glyphicon-pencil"></span>
+            </a>
+          </td>
         </tr>
       <% end %>
     </tbody>
