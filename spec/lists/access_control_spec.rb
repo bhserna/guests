@@ -349,4 +349,35 @@ RSpec.describe "Access control" do
       end
     end
   end
+
+  describe "remove access for person" do
+    it "romoves the person from the list record" do
+      list_id = "list-id-1234"
+
+      groom = {
+        id: "1234",
+        first_name: "Benito",
+        last_name: "Serna",
+        email: "b@e.com",
+        wedding_roll: "groom"
+      }
+
+      bride = {
+        id: "2345",
+        first_name: "Maripaz",
+        last_name: "Moreno",
+        email: "m@e.com",
+        wedding_roll: "bride"
+      }
+
+      record = {
+        list_id: list_id,
+        people_with_access: [groom, bride]
+      }
+
+      store = store_with([record])
+      expect(store).to receive(:update).with(list_id, people_with_access: [bride])
+      Lists.remove_access_for_person(list_id, groom[:id], store)
+    end
+  end
 end

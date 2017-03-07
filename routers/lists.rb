@@ -91,6 +91,11 @@ class ListsRouter < BaseRouter
     end
   end
 
+  post "/lists/:list_id/access/:id/remove" do
+    Lists.remove_access_for_person(params[:list_id], params[:id], lists_store)
+    redirect to("/lists/#{params[:list_id]}/access")
+  end
+
   private
 
   def lists_store

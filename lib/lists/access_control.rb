@@ -49,6 +49,15 @@ module Lists
       end
     end
 
+    def self.remove_access_for_person(list_id, id, store)
+      people =
+        current_access_details(list_id, store)
+        .people_with_access
+        .map(&:to_person)
+        .reject { |person| person.id == id }
+      store.update(list_id, people_with_access: people.map(&:to_h))
+    end
+
     WEDDING_ROLL_OPTIONS = {
       groom: "Novio",
       bride: "Novia",

@@ -28,9 +28,14 @@
           <td><%= person.email %></td>
           <td><%= person.wedding_roll %></td>
           <td class="text-right">
-            <a href="<%= to("/lists/#{@details.list_id}/access/#{person.id}/edit") %>" class="btn btn-link">
+            <a href="<%= to("/lists/#{@details.list_id}/access/#{person.id}/edit") %>" class="btn btn-link btn-xs">
               <span class="glyphicon glyphicon-pencil"></span>
             </a>
+            <form method="post" style="display:inline" action="<%= to("/lists/#{@details.list_id}/access/#{person.id}/remove") %>">
+              <button type="submit" class="btn btn-link btn-xs">
+                <span class="glyphicon glyphicon-trash"></span>
+              </button>
+            </form>
           </td>
         </tr>
       <% end %>
