@@ -1,21 +1,23 @@
 module Lists
   module AccessControl
-    def self.current_access_details(list_id, store)
-      ListAccessDetails.new(store.find_by_list_id(list_id))
+    def self.current_access_details(list_id, lists_store, people_store)
+      list = lists_store.find_by_list_id(list_id)
+      people = people_store.find_all_with_list_id(list_id)
+      ListAccessDetails.new(list, people)
     end
 
     def self.give_access_form
       GiveAccessForm.new(PersonWithAccess.new)
     end
 
-    def self.give_access_to_person(list_id, person_params, store)
-      person = PersonWithAccess.new(person_params)
+    def self.give_access_to_person(list_id, person_params, people_store)
+      person = PersonWithAccess.new(person_params.merge(list_id: list_id))
       errors = Validator.validate(person)
 
       if errors.empty?
-        current = current_access_details(list_id, store).people_with_access
-        people = current + [person]
-        store.update(list_id, people_with_access: people.map(&:to_h))
+        #current = current_access_details(list_id, lists_store, people_store).people_with_access
+        #people = current + [person]
+        people_store.create(person.to_h)
         Success
       else
         form = GiveAccessForm.new(person)
@@ -68,9 +70,9 @@ module Lists
     class ListAccessDetails
       attr_reader :people_with_access
 
-      def initialize(data)
-        @list = List.new(data)
-        @people_with_access = build_people_with_access(data[:people_with_access])
+      def initialize(list_data, people_data)
+        @list = List.new(list_data)
+        @people_with_access = build_people_with_access(people_data)
       end
 
       def list_id
@@ -86,7 +88,7 @@ module Lists
       attr_reader :list
 
       def build_people_with_access(people_data)
-        (people_data || []).map do |person_data|
+        people_data.map do |person_data|
           WeddingRollDecorator.new(PersonWithAccess.new(person_data))
         end
       end
@@ -130,10 +132,10 @@ module Lists
     end
 
     class PersonWithAccess
-      attr_reader :id, :first_name, :last_name, :email, :wedding_roll
+      attr_reader :list_id, :first_name, :last_name, :email, :wedding_roll
 
       def initialize(data = {})
-        @id = get_value(data, :id) || SecureRandom.uuid
+        @list_id = get_value(data, :list_id)
         @first_name = get_value(data, :first_name)
         @last_name = get_value(data, :last_name)
         @email = get_value(data, :email)
@@ -149,7 +151,7 @@ module Lists
       end
 
       def to_h
-        [:id, :first_name, :last_name, :email, :wedding_roll]
+        [:list_id, :first_name, :last_name, :email, :wedding_roll]
           .map { |key| [key, send(key)] }
           .to_h
       end
