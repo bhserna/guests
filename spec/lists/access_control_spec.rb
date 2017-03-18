@@ -22,6 +22,13 @@ RSpec.describe "Access control" do
     def create(attrs)
     end
 
+    def find(id)
+      @records.detect { |r| r[:id] == id }
+    end
+
+    def update(id, attrs)
+    end
+
     def find_all_with_list_id(id)
       @records.select { |r| r[:list_id] == id }
     end
@@ -180,200 +187,174 @@ RSpec.describe "Access control" do
         expect(response).to be_success
       end
     end
+
+    describe "without data" do
+      attr_reader :list_id, :person_params
+
+      before do
+        @list_id = "list-id-1234"
+        @person_params = {}
+      end
+
+      it "does not return success" do
+        list = {list_id: list_id}
+        lists_store = lists_store_with([list])
+        people_store = people_store_with([])
+        response = Lists.give_access_to_person(list_id, person_params, people_store)
+        expect(response).not_to be_success
+      end
+
+      it "returns the errors" do
+        list = {list_id: list_id}
+        lists_store = lists_store_with([list])
+        people_store = people_store_with([])
+        response = Lists.give_access_to_person(list_id, person_params, people_store)
+        expect(response.form.errors[:first_name]).to eq "no puede estar en blanco"
+        expect(response.form.errors[:last_name]).to eq "no puede estar en blanco"
+        expect(response.form.errors[:email]).to eq "no puede estar en blanco"
+        expect(response.form.errors[:wedding_roll]).to eq "no puede estar en blanco"
+      end
+    end
   end
-    #end
 
-    #describe "without data" do
-      #attr_reader :list_id, :person_params
+  describe "edit access form" do
+    it "has the right fields and wedding roll options" do
+      list_id = "list-id-1234"
 
-      #before do
-        #@list_id = "list-id-1234"
-        #@person_params = {}
-      #end
+      groom = {
+        id: "1234",
+        list_id: list_id,
+        first_name: "Benito",
+        last_name: "Serna",
+        email: "b@e.com",
+        wedding_roll: "groom"
+      }
 
-      #it "does not return success" do
-        #record = {list_id: list_id, people_with_access: []}
-        #store = store_with([record])
-        #response = Lists.give_access_to_person(list_id, person_params, store)
-        #expect(response).not_to be_success
-      #end
+      bride = {
+        id: "2345",
+        list_id: list_id,
+        first_name: "Maripaz",
+        last_name: "Moreno",
+        email: "m@e.com",
+        wedding_roll: "bride"
+      }
 
-      #it "returns the errors" do
-        #record = {list_id: list_id, people_with_access: []}
-        #store = store_with([record])
-        #response = Lists.give_access_to_person(list_id, person_params, store)
-        #expect(response.form.errors[:first_name]).to eq "no puede estar en blanco"
-        #expect(response.form.errors[:last_name]).to eq "no puede estar en blanco"
-        #expect(response.form.errors[:email]).to eq "no puede estar en blanco"
-        #expect(response.form.errors[:wedding_roll]).to eq "no puede estar en blanco"
-      #end
-    #end
-  #end
+      people_store = people_store_with([groom, bride])
+      form = Lists.edit_access_form(groom[:id], people_store)
 
-  #describe "edit access form" do
-    #it "has the right fields and wedding roll options" do
-      #list_id = "list-id-1234"
+      expect(form.first_name).to eq "Benito"
+      expect(form.last_name).to eq "Serna"
+      expect(form.email).to eq "b@e.com"
+      expect(form.wedding_roll).to eq "groom"
+      expect(form.wedding_roll_options).to eq [
+        {value: :groom, text: "Novio"},
+        {value: :bride, text: "Novia"},
+        {value: :wedding_planner, text: "Wedding planner"},
+        {value: :other, text: "Otro"}
+      ]
+    end
+  end
 
-      #groom = {
-        #id: "1234",
-        #first_name: "Benito",
-        #last_name: "Serna",
-        #email: "b@e.com",
-        #wedding_roll: "groom"
-      #}
+  describe "update access for person" do
+    describe "updates the person on the list record" do
+      attr_reader :list_id, :groom, :bride, :record, :person_params
 
-      #bride = {
-        #id: "2345",
-        #first_name: "Maripaz",
-        #last_name: "Moreno",
-        #email: "m@e.com",
-        #wedding_roll: "bride"
-      #}
+      before do
+        @list_id = "list-id-1234"
 
-      #record = {
-        #list_id: list_id,
-        #people_with_access: [groom, bride]
-      #}
+        @groom = {
+          id: "1234",
+          list_id: list_id,
+          first_name: "Benito",
+          last_name: "Serna",
+          email: "b@e.com",
+          wedding_roll: "groom"
+        }
 
-      #store = store_with([record])
-      #form = Lists.edit_access_form(list_id, groom[:id], store)
+        @bride = {
+          id: "2345",
+          list_id: list_id,
+          first_name: "Maripaz",
+          last_name: "Moreno",
+          email: "m@e.com",
+          wedding_roll: "bride"
+        }
 
-      #expect(form.first_name).to eq "Benito"
-      #expect(form.last_name).to eq "Serna"
-      #expect(form.email).to eq "b@e.com"
-      #expect(form.wedding_roll).to eq "groom"
-      #expect(form.wedding_roll_options).to eq [
-        #{value: :groom, text: "Novio"},
-        #{value: :bride, text: "Novia"},
-        #{value: :wedding_planner, text: "Wedding planner"},
-        #{value: :other, text: "Otro"}
-      #]
-    #end
-  #end
+        @person_params = {
+          "first_name" => "Updated Benito",
+          "last_name" => "Updated Serna",
+          "email" => "b-updated@e.com",
+          "wedding_roll" => "groom"
+        }
+      end
 
-  #describe "update access for person" do
-    #describe "updates the person on the list record" do
-      #attr_reader :list_id, :groom, :bride, :record, :person_params
+      example do
+        people_store = people_store_with([groom, bride])
+        expect(people_store).to receive(:update).with(groom[:id], {
+          list_id: list_id,
+          first_name: "Updated Benito",
+          last_name: "Updated Serna",
+          email: "b-updated@e.com",
+          wedding_roll: "groom"
+        })
 
-      #before do
-        #@list_id = "list-id-1234"
+        Lists.update_access_for_person(groom[:id], person_params, people_store)
+      end
 
-        #@groom = {
-          #id: "1234",
-          #first_name: "Benito",
-          #last_name: "Serna",
-          #email: "b@e.com",
-          #wedding_roll: "groom"
-        #}
+      it "returns success" do
+        people_store = people_store_with([groom, bride])
+        response = Lists.update_access_for_person(groom[:id], person_params, people_store)
+        expect(response).to be_success
+      end
+    end
 
-        #@bride = {
-          #id: "2345",
-          #first_name: "Maripaz",
-          #last_name: "Moreno",
-          #email: "m@e.com",
-          #wedding_roll: "bride"
-        #}
+    describe "without data" do
+      attr_reader :groom, :record, :person_params
 
-        #@record = {
-          #list_id: list_id,
-          #people_with_access: [groom, bride]
-        #}
+      before do
+        @groom = {
+          id: "1234",
+          list_id: "list-id-1234",
+          first_name: "Benito",
+          last_name: "Serna",
+          email: "b@e.com",
+          wedding_roll: "groom"
+        }
 
-        #@person_params = {
-          #"first_name" => "Updated Benito",
-          #"last_name" => "Updated Serna",
-          #"email" => "b-updated@e.com",
-          #"wedding_roll" => "groom"
-        #}
-      #end
+        @person_params = {}
+      end
 
-      #example do
-        #store = store_with([record])
-        #expect(store).to receive(:update).with(list_id, people_with_access: [{
-          #id: groom[:id],
-          #first_name: "Updated Benito",
-          #last_name: "Updated Serna",
-          #email: "b-updated@e.com",
-          #wedding_roll: "groom"
-        #}, bride])
+      it "does not return success" do
+        people_store = people_store_with([groom])
+        response = Lists.update_access_for_person(groom[:id], person_params, people_store)
+        expect(response).not_to be_success
+      end
 
-        #Lists.update_access_for_person(list_id, groom[:id], person_params, store)
-      #end
+      it "returns the errors" do
+        people_store = people_store_with([groom])
+        response = Lists.update_access_for_person(groom[:id], person_params, people_store)
+        expect(response.form.errors[:first_name]).to eq "no puede estar en blanco"
+        expect(response.form.errors[:last_name]).to eq "no puede estar en blanco"
+        expect(response.form.errors[:email]).to eq "no puede estar en blanco"
+        expect(response.form.errors[:wedding_roll]).to eq "no puede estar en blanco"
+      end
+    end
+  end
 
-      #it "returns success" do
-        #store = store_with([record])
-        #response = Lists.update_access_for_person(list_id, groom[:id], person_params, store)
-        #expect(response).to be_success
-      #end
-    #end
+  describe "remove access for person" do
+    it "romoves the person from the list record" do
+      groom = {
+        id: "1234",
+        list_id: "list-id-1234",
+        first_name: "Benito",
+        last_name: "Serna",
+        email: "b@e.com",
+        wedding_roll: "groom"
+      }
 
-    #describe "without data" do
-      #attr_reader :list_id, :groom, :record, :person_params
-
-      #before do
-        #@list_id = "list-id-1234"
-
-        #@groom = {
-          #id: "1234",
-          #first_name: "Benito",
-          #last_name: "Serna",
-          #email: "b@e.com",
-          #wedding_roll: "groom"
-        #}
-
-        #@record = {
-          #list_id: list_id,
-          #people_with_access: [groom]
-        #}
-
-        #@person_params = {}
-      #end
-
-      #it "does not return success" do
-        #store = store_with([record])
-        #response = Lists.update_access_for_person(list_id, groom[:id], person_params, store)
-        #expect(response).not_to be_success
-      #end
-
-      #it "returns the errors" do
-        #store = store_with([record])
-        #response = Lists.update_access_for_person(list_id, groom[:id], person_params, store)
-        #expect(response.form.errors[:first_name]).to eq "no puede estar en blanco"
-        #expect(response.form.errors[:last_name]).to eq "no puede estar en blanco"
-        #expect(response.form.errors[:email]).to eq "no puede estar en blanco"
-        #expect(response.form.errors[:wedding_roll]).to eq "no puede estar en blanco"
-      #end
-    #end
-  #end
-
-  #describe "remove access for person" do
-    #it "romoves the person from the list record" do
-      #list_id = "list-id-1234"
-
-      #groom = {
-        #id: "1234",
-        #first_name: "Benito",
-        #last_name: "Serna",
-        #email: "b@e.com",
-        #wedding_roll: "groom"
-      #}
-
-      #bride = {
-        #id: "2345",
-        #first_name: "Maripaz",
-        #last_name: "Moreno",
-        #email: "m@e.com",
-        #wedding_roll: "bride"
-      #}
-
-      #record = {
-        #list_id: list_id,
-        #people_with_access: [groom, bride]
-      #}
-
-      #store = store_with([record])
-      #expect(store).to receive(:update).with(list_id, people_with_access: [bride])
-      #Lists.remove_access_for_person(list_id, groom[:id], store)
-    #end
-  #end
+      people_store = people_store_with([groom])
+      expect(people_store).to receive(:delete).with(groom[:id])
+      Lists.remove_access_for_person(groom[:id], people_store)
+    end
+  end
 end

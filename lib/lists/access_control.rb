@@ -15,8 +15,6 @@ module Lists
       errors = Validator.validate(person)
 
       if errors.empty?
-        #current = current_access_details(list_id, lists_store, people_store).people_with_access
-        #people = current + [person]
         people_store.create(person.to_h)
         Success
       else
@@ -26,23 +24,16 @@ module Lists
       end
     end
 
-    def self.edit_access_form(list_id, id, store)
-      GiveAccessForm.new(
-        current_access_details(list_id, store)
-        .people_with_access
-        .detect { |person| person.id == id }
-        .to_person
-      )
+    def self.edit_access_form(id, people_store)
+      GiveAccessForm.new(PersonWithAccess.new(people_store.find(id)))
     end
 
-    def self.update_access_for_person(list_id, id, person_params, store)
-      people = current_access_details(list_id, store).people_with_access.map(&:to_person)
-      person = people.detect { |person| person.id == id }.update(person_params)
+    def self.update_access_for_person(id, person_params, people_store)
+      person = PersonWithAccess.new(people_store.find(id)).update(person_params)
       errors = Validator.validate(person)
 
       if errors.empty?
-        people = people.map { |p| p.id == person.id && person || p }
-        store.update(list_id, people_with_access: people.map(&:to_h))
+        people_store.update(person.id, person.to_h)
         Success
       else
         form = GiveAccessForm.new(person)
@@ -51,13 +42,8 @@ module Lists
       end
     end
 
-    def self.remove_access_for_person(list_id, id, store)
-      people =
-        current_access_details(list_id, store)
-        .people_with_access
-        .map(&:to_person)
-        .reject { |person| person.id == id }
-      store.update(list_id, people_with_access: people.map(&:to_h))
+    def self.remove_access_for_person(id, people_store)
+      people_store.delete(id)
     end
 
     WEDDING_ROLL_OPTIONS = {
@@ -132,9 +118,10 @@ module Lists
     end
 
     class PersonWithAccess
-      attr_reader :list_id, :first_name, :last_name, :email, :wedding_roll
+      attr_reader :id, :list_id, :first_name, :last_name, :email, :wedding_roll
 
       def initialize(data = {})
+        @id = get_value(data, :id)
         @list_id = get_value(data, :list_id)
         @first_name = get_value(data, :first_name)
         @last_name = get_value(data, :last_name)
@@ -147,7 +134,7 @@ module Lists
       end
 
       def update(data)
-        self.class.new(data.merge(id: id))
+        self.class.new(data.merge(id: id, list_id: list_id))
       end
 
       def to_h
