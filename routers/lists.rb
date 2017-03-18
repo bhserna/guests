@@ -51,19 +51,19 @@ class ListsRouter < BaseRouter
   end
 
   get "/lists/:list_id/access" do
-    @details = Lists.current_access_details(params[:list_id], lists_store)
+    @details = Lists.current_access_details(params[:list_id], lists_store, people_store)
     erb :"lists/access"
   end
 
   get "/lists/:list_id/access/new" do
     @form = Lists.give_access_form
-    @details = Lists.current_access_details(params[:list_id], lists_store)
+    @details = Lists.current_access_details(params[:list_id], lists_store, people_store)
     erb :"lists/new_access"
   end
 
   post "/lists/:list_id/access" do
-    @details = Lists.current_access_details(params[:list_id], lists_store)
-    response = Lists.give_access_to_person(params[:list_id], params, lists_store)
+    @details = Lists.current_access_details(params[:list_id], lists_store, people_store)
+    response = Lists.give_access_to_person(params[:list_id], params, people_store)
 
     if response.success?
       redirect to("/lists/#{@details.list_id}/access")
@@ -74,14 +74,14 @@ class ListsRouter < BaseRouter
   end
 
   get "/lists/:list_id/access/:id/edit" do
-    @form = Lists.edit_access_form(params[:list_id], params[:id], lists_store)
-    @details = Lists.current_access_details(params[:list_id], lists_store)
+    @form = Lists.edit_access_form(params[:id], people_store)
+    @details = Lists.current_access_details(params[:list_id], lists_store, people_store)
     erb :"lists/edit_access"
   end
 
   post "/lists/:list_id/access/:id" do
-    @details = Lists.current_access_details(params[:list_id], lists_store)
-    response = Lists.update_access_for_person(params[:list_id], params[:id], params, lists_store)
+    @details = Lists.current_access_details(params[:list_id], lists_store, people_store)
+    response = Lists.update_access_for_person(params[:id], params, people_store)
 
     if response.success?
       redirect to("/lists/#{@details.list_id}/access")
@@ -92,7 +92,7 @@ class ListsRouter < BaseRouter
   end
 
   post "/lists/:list_id/access/:id/remove" do
-    Lists.remove_access_for_person(params[:list_id], params[:id], lists_store)
+    Lists.remove_access_for_person(params[:id], people_store)
     redirect to("/lists/#{params[:list_id]}/access")
   end
 
@@ -100,5 +100,9 @@ class ListsRouter < BaseRouter
 
   def lists_store
     Lists::Store
+  end
+
+  def people_store
+    Lists::PeopleStore
   end
 end

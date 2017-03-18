@@ -23,6 +23,31 @@ module Lists
     end
   end
 
+  module PeopleStore
+    class ListPerson < ActiveRecord::Base
+    end
+
+    def self.find(id)
+      ListPerson.find(id)
+    end
+
+    def self.find_all_with_list_id(list_id)
+      ListPerson.where(list_id: list_id)
+    end
+
+    def self.create(attrs)
+      ListPerson.create(attrs)
+    end
+
+    def self.update(id, attrs)
+      ListPerson.update(id, attrs)
+    end
+
+    def self.delete(id)
+      ListPerson.delete(id)
+    end
+  end
+
   module IdGenerator
     def self.generate_id
       token = SecureRandom.uuid
