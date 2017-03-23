@@ -32,11 +32,12 @@ RSpec.describe "User auth" do
   end
 
   it "returns the current user for the stored user id in the session" do
-    record = {id: "user-1234", first_name: "Benito"}
+    record = {id: "user-1234", email: "b@e.com", first_name: "Benito"}
     store = store_with([record])
     session_store = session_store_with(user_id: record[:id])
     user = get_current_user(store, session_store)
     expect(user.id).to eq "user-1234"
+    expect(user.email).to eq "b@e.com"
     expect(user.first_name).to eq "Benito"
   end
 end

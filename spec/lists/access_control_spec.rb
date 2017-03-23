@@ -52,6 +52,52 @@ RSpec.describe "Access control" do
     expect(details.list_name).to eq "Mi super lista"
   end
 
+  describe "has access?" do
+    attr_reader :list_id, :email
+
+    before do
+      @list_id = "list-id-1234"
+      @email = "petro@example.com"
+    end
+
+    def has_access?(user, list_id, people_store)
+      Lists.has_access?(user, list_id, people_store)
+    end
+
+    example "an empty list" do
+      people_store = people_store_with([])
+      expect(has_access?(email, list_id, people_store)).not_to be
+    end
+
+    example "with the owner of the list list" do
+      pending
+    end
+
+    example "with the user on the list" do
+      people_store = people_store_with([{
+        list_id: list_id,
+        first_name: "Petronila",
+        last_name: "Lozano",
+        email: email,
+        wedding_roll: "bride"
+      }])
+      expect(has_access?(email, list_id, people_store)).to be
+    end
+
+    example "without the user on the list" do
+      other_email = "other@example.com"
+      people_store = people_store_with([{
+        list_id: list_id,
+        first_name: "Petronila",
+        last_name: "Lozano",
+        email: email,
+        wedding_roll: "bride"
+      }])
+      expect(has_access?(other_email, list_id, people_store)).not_to be
+    end
+  end
+
+
   describe "people with access" do
     def people_with_access(list_id, lists_store, people_store)
       Lists

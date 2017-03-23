@@ -1,5 +1,12 @@
 module Lists
   module AccessControl
+    def self.has_access?(email, list_id, people_store)
+      people_store
+        .find_all_with_list_id(list_id)
+        .map { |person_data| PersonWithAccess.new(person_data) }
+        .any? { |person| person.email == email }
+    end
+
     def self.current_access_details(list_id, lists_store, people_store)
       list = lists_store.find_by_list_id(list_id)
       people = people_store.find_all_with_list_id(list_id)

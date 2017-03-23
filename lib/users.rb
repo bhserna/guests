@@ -36,10 +36,11 @@ module Users
   end
 
   class User
-    attr_reader :id, :first_name
+    attr_reader :id, :email, :first_name
 
     def initialize(data)
       @id = data[:id]
+      @email = data[:email]
       @first_name = data[:first_name]
     end
   end

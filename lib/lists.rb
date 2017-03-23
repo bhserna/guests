@@ -66,4 +66,8 @@ module Lists
   def self.remove_access_for_person(*args)
     AccessControl.remove_access_for_person(*args)
   end
+
+  def self.has_access?(*args)
+    AccessControl.has_access?(*args)
+  end
 end
