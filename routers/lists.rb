@@ -1,11 +1,11 @@
 class ListsRouter < BaseRouter
-  before do
+  before "/lists" do
     return redirect to("/users/login") if Users.guest?(users_config)
     @user = Users.get_current_user(users_config)
   end
 
   before "/lists/:id" do
-    unless Lists.has_access?(@user.email, params[:list_id], people_store)
+    unless Lists.has_access?(@user, params[:id], lists_store, people_store)
       return redirect to("/lists")
     end
   end

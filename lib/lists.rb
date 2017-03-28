@@ -20,11 +20,12 @@ module Lists
   end
 
   class List
-    attr_reader :id, :name
+    attr_reader :id, :name, :user_id
 
     def initialize(data)
       @id = data[:list_id]
       @name = data[:name]
+      @user_id = data[:user_id]
     end
   end
 

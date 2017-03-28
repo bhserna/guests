@@ -32,7 +32,11 @@ module Users
   def self.get_current_user(config)
     store = config.fetch(:store)
     session_store = config.fetch(:session_store)
-    User.new(store.find(session_store.user_id))
+    build_user(store.find(session_store.user_id))
+  end
+
+  def self.build_user(record)
+    User.new(record)
   end
 
   class User

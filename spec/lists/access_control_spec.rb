@@ -42,6 +42,10 @@ RSpec.describe "Access control" do
     FakePeopleWithAccessStore.new(records)
   end
 
+  def user_with(attrs)
+    Users.build_user(attrs.merge(id: SecureRandom.uuid))
+  end
+
   it "has the list info" do
     list_id = "list-id-1234"
     list = {list_id: list_id, name: "Mi super lista"}
@@ -53,24 +57,29 @@ RSpec.describe "Access control" do
   end
 
   describe "has access?" do
-    attr_reader :list_id, :email
+    attr_reader :list_id, :user, :email, :owner, :lists_store
 
     before do
-      @list_id = "list-id-1234"
       @email = "petro@example.com"
+      @list_id = "list-id-1234"
+      @user = user_with(email: email)
+      @owner = user_with(email: "owner@example.com")
+      list = {list_id: list_id, user_id: owner.id}
+      @lists_store = lists_store_with([list])
     end
 
     def has_access?(user, list_id, people_store)
-      Lists.has_access?(user, list_id, people_store)
+      Lists.has_access?(user, list_id, lists_store, people_store)
     end
 
     example "an empty list" do
       people_store = people_store_with([])
-      expect(has_access?(email, list_id, people_store)).not_to be
+      expect(has_access?(user, list_id, people_store)).not_to be
     end
 
     example "with the owner of the list list" do
-      pending
+      people_store = people_store_with([])
+      expect(has_access?(owner, list_id, people_store)).to be
     end
 
     example "with the user on the list" do
@@ -81,11 +90,11 @@ RSpec.describe "Access control" do
         email: email,
         wedding_roll: "bride"
       }])
-      expect(has_access?(email, list_id, people_store)).to be
+      expect(has_access?(user, list_id, people_store)).to be
     end
 
     example "without the user on the list" do
-      other_email = "other@example.com"
+      other_user = user_with(email: "other@example.com")
       people_store = people_store_with([{
         list_id: list_id,
         first_name: "Petronila",
@@ -93,7 +102,7 @@ RSpec.describe "Access control" do
         email: email,
         wedding_roll: "bride"
       }])
-      expect(has_access?(other_email, list_id, people_store)).not_to be
+      expect(has_access?(other_user, list_id, people_store)).not_to be
     end
   end
 
