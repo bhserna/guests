@@ -40,8 +40,11 @@ module Lists
     ListCreator.create_list(*args)
   end
 
-  def self.lists_of_user(user_id, store)
-    store.find_all_by_user_id(user_id).map { |record| List.new(record) }
+  def self.lists_of_user(user, lists_store, people_store)
+    records = lists_store.find_all_by_user_id(user.id)
+    list_ids = people_store.find_ids_of_lists_with_access_for_email(user.email)
+    records = (records + lists_store.find_all_by_list_ids(list_ids)).uniq
+    records.map { |record| List.new(record) }
   end
 
   def self.current_access_details(*args)

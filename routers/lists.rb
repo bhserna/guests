@@ -1,5 +1,5 @@
 class ListsRouter < BaseRouter
-  before "/lists" do
+  before "/lists*" do
     return redirect to("/users/login") if Users.guest?(users_config)
     @user = Users.get_current_user(users_config)
   end
@@ -13,7 +13,7 @@ class ListsRouter < BaseRouter
   get "/lists" do
     redirect to("/users/registration") if Users.guest?(users_config)
     @user = Users.get_current_user(users_config)
-    @lists = Lists.lists_of_user(@user.id, lists_store)
+    @lists = Lists.lists_of_user(@user, lists_store, people_store)
     erb :"lists/index"
   end
 

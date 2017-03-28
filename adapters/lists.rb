@@ -21,6 +21,10 @@ module Lists
     def self.find_by_list_id(token)
       List.find_by(list_id: token)
     end
+
+    def self.find_all_by_list_ids(ids)
+      List.where(list_id: ids)
+    end
   end
 
   module PeopleStore
@@ -33,6 +37,10 @@ module Lists
 
     def self.find_all_with_list_id(list_id)
       ListPerson.where(list_id: list_id)
+    end
+
+    def self.find_ids_of_lists_with_access_for_email(email)
+      ListPerson.where(email: email).pluck(:list_id)
     end
 
     def self.create(attrs)
