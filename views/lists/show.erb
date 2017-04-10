@@ -1,5 +1,7 @@
 <div class="container">
-  <a href="<%= to("/lists/#{params[:id]}/access") %>" class="btn btn-default pull-right">Control de acceso</a>
+  <% if @user.wedding_planner? %>
+    <a href="<%= to("/lists/#{params[:id]}/access") %>" class="btn btn-default pull-right">Control de acceso</a>
+  <% end %>
 
   <div id="app" data-list-id="<%= params[:id] %>"></div>
 </div>

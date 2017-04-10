@@ -40,4 +40,18 @@ RSpec.describe "User auth" do
     expect(user.email).to eq "b@e.com"
     expect(user.first_name).to eq "Benito"
   end
+
+  it "knows if the user is a wedding planner" do
+    record = {id: "user-1234", email: "b@e.com", first_name: "Benito", user_type: "wedding_planner"}
+    store = store_with([record])
+    session_store = session_store_with(user_id: record[:id])
+    user = get_current_user(store, session_store)
+    expect(user).to be_wedding_planner
+
+    record = {id: "user-1234", email: "b@e.com", first_name: "Benito", user_type: "groom"}
+    store = store_with([record])
+    session_store = session_store_with(user_id: record[:id])
+    user = get_current_user(store, session_store)
+    expect(user).not_to be_wedding_planner
+  end
 end

@@ -45,7 +45,12 @@ module Users
     def initialize(data)
       @id = data[:id]
       @email = data[:email]
+      @user_type = data[:user_type]
       @first_name = data[:first_name]
+    end
+
+    def wedding_planner?
+      @user_type == "wedding_planner"
     end
   end
 
