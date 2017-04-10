@@ -1,0 +1,21 @@
+<div class="container" style="max-width: 500px">
+  <div class="page-header">
+    <h1>Editar persona de lista de accesso</h1>
+  </div>
+
+  <p class="text-info">
+  Al enviar esta forma actualizaras la lista de accesso de tu lista:
+  <br/><strong>"<%= @details.list_name %>"</strong>.
+  </p>
+
+  <form action="<%= to("/lists/#{@details.list_id}/access/#{@form.id}") %>" method="POST" style="margin-bottom: 20px">
+    <%= form_group @form, :first_name, "Nombre" %>
+    <%= form_group @form, :last_name, "Apellidos" %>
+    <%= form_group @form, :email, "Email", input_type: "email" %>
+    <%= select_form_group @form, :wedding_roll, "Roll en la boda", @form.wedding_roll_options %>
+    <button type="submit" class="btn btn-primary">Actualizar</button>
+    <a href="<%= to("/lists/#{@details.list_id}/access") %>" class="btn btn-default">
+      Regresar a control de accesso
+    </a>
+  </form>
+</div>

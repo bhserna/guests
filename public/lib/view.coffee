@@ -211,9 +211,7 @@ view = renderable (data) ->
         if data.list.invitations.length >= 2
           div ".alert.alert-warning", style: "margin-top: 1em", ->
             p "Los datos de esta lista solo se guardan en la memoria de tu navegador."
-            p ->
-              span "Para crear listas para tus eventos y compartirlas con los novios"
-              strong " regístrate por solo $20 USD al mes."
+            p "Registrate para crear listas para tus eventos y compartirlas con los novios"
 
 
 class Page

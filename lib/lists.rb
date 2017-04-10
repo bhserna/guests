@@ -1,42 +1,7 @@
 require_relative "validations"
 
 module Lists
-  def self.new_list_form
-    Form.new
-  end
-
-  def self.create_list(user_id, data, store, id_generator)
-    form = Form.new(data)
-    errors = Validator.validate(form)
-
-    if errors.empty?
-      store.save(
-        list_id: id_generator.generate_id,
-        user_id: user_id,
-        name: data["name"])
-      Success
-    else
-      form.add_errors(errors)
-      Error.new(form)
-    end
-  end
-
-  def self.lists_of_user(user_id, store)
-    store
-      .find_all_by_user_id(user_id)
-      .map { |record| List.new(record) }
-  end
-
-  class List
-    attr_reader :id, :name
-
-    def initialize(data)
-      @id = data[:list_id]
-      @name = data[:name]
-    end
-  end
-
-  class Error
+  class ErrorWithForm
     attr_reader :form
 
     def initialize(form)
@@ -54,24 +19,59 @@ module Lists
     end
   end
 
-  class Form
-    attr_reader :name, :errors
+  class List
+    attr_reader :id, :name, :user_id
 
-    def initialize(data = {})
-      @name = data["name"]
-      @errors = {}
-    end
-
-    def add_errors(errors)
-      @errors = errors
+    def initialize(data)
+      @id = data[:list_id]
+      @name = data[:name]
+      @user_id = data[:user_id]
     end
   end
 
-  class Validator
-    extend Validations
+  require_relative "lists/list_creator"
+  require_relative "lists/access_control"
 
-    def self.validate(form)
-      [*validate_presense_of(form, :name)].compact.to_h
-    end
+  def self.new_list_form
+    ListCreator.new_list_form
+  end
+
+  def self.create_list(*args)
+    ListCreator.create_list(*args)
+  end
+
+  def self.lists_of_user(user, lists_store, people_store)
+    records = lists_store.find_all_by_user_id(user.id)
+    list_ids = people_store.find_ids_of_lists_with_access_for_email(user.email)
+    records = (records + lists_store.find_all_by_list_ids(list_ids)).uniq
+    records.map { |record| List.new(record) }
+  end
+
+  def self.current_access_details(*args)
+    AccessControl.current_access_details(*args)
+  end
+
+  def self.give_access_form
+    AccessControl.give_access_form
+  end
+
+  def self.give_access_to_person(*args)
+    AccessControl.give_access_to_person(*args)
+  end
+
+  def self.edit_access_form(*args)
+    AccessControl.edit_access_form(*args)
+  end
+
+  def self.update_access_for_person(*args)
+    AccessControl.update_access_for_person(*args)
+  end
+
+  def self.remove_access_for_person(*args)
+    AccessControl.remove_access_for_person(*args)
+  end
+
+  def self.has_access?(*args)
+    AccessControl.has_access?(*args)
   end
 end

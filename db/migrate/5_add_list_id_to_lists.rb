@@ -3,4 +3,3 @@ class AddListIdToLists < ActiveRecord::Migration
     add_column :lists, :list_id, :string
   end
 end
-
