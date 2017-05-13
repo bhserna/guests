@@ -248,7 +248,7 @@ onAction = (event, selector, callback) ->
     e.preventDefault()
     callback($el = $(this))
 
-store = if $("#app").data("listId") then RemoteStore else MemoryStore
+store = if $("#app").data("listId") then RemoteStore else (new MemoryStore)
 app = new GuestsApp(store, new Page)
 
 $ -> $("#invitationTitle").focus()
