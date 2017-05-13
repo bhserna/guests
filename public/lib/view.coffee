@@ -210,8 +210,8 @@ view = renderable (data) ->
       unless $("#app").data("listId")
         if data.list.invitations.length >= 2
           div ".alert.alert-warning", style: "margin-top: 1em", ->
-            p "Los datos de esta lista solo se guardan en la memoria de tu navegador."
-            p "Registrate para crear listas para tus eventos y compartirlas con los novios"
+            p "Los datos de esta lista no se guardan y se perderán al refrescar el navegador."
+            p "Registrate para crear listas y guardar los datos en tu cuenta."
 
 
 class Page
@@ -248,7 +248,7 @@ onAction = (event, selector, callback) ->
     e.preventDefault()
     callback($el = $(this))
 
-store = if $("#app").data("listId") then RemoteStore else LocalStore
+store = if $("#app").data("listId") then RemoteStore else MemoryStore
 app = new GuestsApp(store, new Page)
 
 $ -> $("#invitationTitle").focus()
