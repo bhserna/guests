@@ -23,7 +23,7 @@ class Router < BaseRouter
   end
 
   get "/" do
-    erb :wedding_planners_home, layout: :home_layout
+    erb :home, layout: :home_layout
   end
 
   get "/demo" do
