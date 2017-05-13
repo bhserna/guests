@@ -1,9 +1,10 @@
 <div class="container">
-  <% if @user.wedding_planner? %>
-    <a href="<%= to("/lists/#{params[:id]}/access") %>" class="btn btn-default pull-right">Control de acceso</a>
-  <% end %>
+  <div class="page-header">
+    <a href="<%= to("/lists/#{@list.id}/access") %>" class="btn btn-default pull-right">Control de acceso</a>
+    <h1>Lista: <%= @list.name %></h1>
+  </div>
 
-  <div id="app" data-list-id="<%= params[:id] %>"></div>
+  <div id="app" data-list-id="<%= @list.id %>"></div>
 </div>
 
 <script src="../vendor/underscore.js"></script>

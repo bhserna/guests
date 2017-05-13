@@ -5,26 +5,23 @@ class ListsRouter < BaseRouter
   end
 
   before "/lists/:id" do
-    unless Lists.has_access?(@user, params[:id], lists_store, people_store)
+    if params[:id] != "new" && !Lists.has_access?(@user, params[:id], lists_store, people_store)
       return redirect to("/lists")
     end
   end
 
   get "/lists" do
-    redirect to("/users/registration") if Users.guest?(users_config)
     @user = Users.get_current_user(users_config)
     @lists = Lists.lists_of_user(@user, lists_store, people_store)
     erb :"lists/index"
   end
 
   get "/lists/new" do
-    redirect to("/") if Users.guest?(users_config)
     @form = Lists.new_list_form
     erb :"lists/new"
   end
 
   post "/lists" do
-    redirect to("/") if Users.guest?(users_config)
     user = Users.get_current_user(users_config)
     response = Lists.create_list(user.id, params, lists_store, Lists::IdGenerator)
 
@@ -37,7 +34,7 @@ class ListsRouter < BaseRouter
   end
 
   get "/lists/:id" do
-    redirect to("/") if Users.guest?(users_config)
+    @list = Lists.get_list(params[:id], Lists::Store)
     erb :"lists/show"
   end
 

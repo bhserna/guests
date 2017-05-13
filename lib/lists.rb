@@ -47,6 +47,10 @@ module Lists
     records.map { |record| List.new(record) }
   end
 
+  def self.get_list(list_id, lists_store)
+    List.new(lists_store.find_by_list_id(list_id))
+  end
+
   def self.current_access_details(*args)
     AccessControl.current_access_details(*args)
   end
