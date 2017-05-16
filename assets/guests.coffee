@@ -1,3 +1,5 @@
+_ = require("underscore")
+
 class Guest
   constructor: ({@id, @name})->
 

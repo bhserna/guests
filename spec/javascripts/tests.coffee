@@ -1,3 +1,4 @@
+_ = require("underscore")
 {test, module} = QUnit
 first = (list) -> list[0]
 second = (list) -> list[1]

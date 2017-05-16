@@ -1,4 +1,5 @@
-{renderable, p, a, span, div, h1, h3, h4, text, button, br, form, input, label, small, strong, ul, li, table, thead, tbody, tr, th, td, raw} = teacup
+_ = require("underscore")
+{renderable, p, a, span, div, h1, h3, h4, text, button, br, form, input, label, small, strong, ul, li, table, thead, tbody, tr, th, td, raw} = require("teacup")
 
 panel = renderable (title, content) ->
   div ".panel.panel-default", style: "margin-top: 10px", ->
