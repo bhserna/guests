@@ -9,7 +9,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "yarn run build_app && yarn run build_tests",
     "postinstall": "npm run-script build",
-    "watch": "watchify assets/app.coffee -o public/bundle.js -t coffeeify",
+    "watch": "yarn run watch_app | yarn run watch_tests",
+    "watch_app": "watchify assets/index.coffee -o public/bundle.js -t coffeeify",
+    "watch_tests": "watchify spec/javascripts/tests.coffee -o public/tests_bundle.js -t coffeeify",
     "build_app": "browserify assets/index.coffee -o public/bundle.js -t coffeeify",
     "build_tests": "browserify spec/javascripts/tests.coffee -o public/tests_bundle.js -t coffeeify"
   },
