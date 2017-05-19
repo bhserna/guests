@@ -1,18 +1,6 @@
 _ = require("underscore")
 {renderable, p, a, span, div, h1, h3, h4, text, button, br, form, input, label, small, strong, ul, li, table, thead, tbody, tr, th, td, raw} = require("teacup")
 
-panel = renderable (title, content) ->
-  div ".panel.panel-default", style: "margin-top: 10px", ->
-    div ".panel-heading", ->
-      h3 ".panel-title", title
-    content()
-
-panelBody = renderable (content) ->
-  div ".panel-body", content
-
-panelFooter = renderable (content) ->
-  div ".panel-footer", content
-
 invitationField = renderable (content) ->
   div style: "margin-bottom: 1em", content
 
@@ -108,7 +96,7 @@ editInvitationView = renderable (editor) ->
 
 invitationsView = renderable (list) ->
   div ".page-header", ->
-    h3 "Invitaciones (#{list.invitations.length})"
+    h3 "Todas las invitaciones (#{list.invitations.length})"
   div ".table-responsive", ->
     table ".table", ->
       thead ->
@@ -181,38 +169,68 @@ confirmAssistanceView = renderable (confirmator) ->
             button "#cancelInvitationConfirmation.btn.btn-default", type: "button", "Cancelar"
             button ".btn.btn-primary", type: "submit", "Guardar"
 
+onboardingMessageView = renderable (list) ->
+  if list.invitations.length < 2
+    div ".alert.alert-info", style: "margin-top: 1em", ->
+      h4 "Registra a tus invitados por invitación o familia"
+
+      p ->
+        strong "1. Escribe el nombre de la invitación."
+        br()
+        span "Ejemplo: 'Familia Perez Martinez' o 'Carlos Hernandez y Sra.'"
+        br()
+        span "Consejo: Usa 'Enter' en lugar de dar click en 'Agregar'"
+
+      p ->
+        strong "2. Agrega el nombre de las personas en esa invitación."
+        br()
+        span "Consejo: Usa 'Enter' en lugar de dar click en 'Agregar'"
+
+      p ->
+        strong "3. Da click en Guarda invitación"
+
+groupsView = renderable (data) ->
+  groupColor = renderable (color) ->
+    div style: "width: 1em; height: 1em; background: #{color}; display: inline-block; border-radius: 3px; margin-left: 5px; margin-bottom: -1px"
+
+  h3 "Grupos"
+  ul ".list-unstyled", ->
+    li style: "border-bottom: 1px solid #eee; padding: 0.5em 0;", ->
+      input id: "group1", type: "checkbox", style: "margin-right: 10px"
+      label for: "group1", style: "font-weight: normal", ->
+        text "Amigos Maripaz (0)"
+      editButton "#editGroup1"
+      trashButton "#deleteGroup1"
+    li style: "border-bottom: 1px solid #eee; padding: 0.5em 0;", ->
+      input id: "group2", type: "checkbox", style: "margin-right: 10px"
+      label for: "group2", style: "font-weight: normal", ->
+        text "Amigos Benito (0)"
+      editButton "#editGroup2"
+      trashButton "#deleteGroup2"
+    li style: "padding: 0.5em 0", ->
+      form "#addGroup", ->
+        textInput "#groupName", placeholder: "Amigos de..."
+        button ".btn.btn-default", type: "submit", "Agregar"
+
+
+storageMessageView = renderable (list) ->
+  unless $("#app").data("listId")
+    if list.invitations.length >= 2
+      div ".alert.alert-warning", style: "margin-top: 1em", ->
+        p "Los datos de esta lista no se guardan y se perderán al refrescar el navegador."
+        p "Registrate para crear listas y guardar los datos en tu cuenta."
+
 view = renderable (data) ->
   div ".row", ->
-    div ".col-md-3 clearfix", style: "background: #f9f9f9; border-radius: 5px; margin-top: 20px;", ->
-      editInvitationView(data.editor)
-
+    div ".col-md-3 clearfix", style: "margin-top: 1em", ->
+      div style: "padding: 0.5em 1em; background: #f9f9f9; border-radius: 5px; margin-bottom: 1em", ->
+        editInvitationView(data.editor)
+      div style: "padding: 0.5em 1em; background: #f9f9f9; border-radius: 5px;", ->
+        groupsView()
     div ".col-md-9", ->
       invitationsView(data.list)
-
-      if data.list.invitations.length < 2
-        div ".alert.alert-info", style: "margin-top: 1em", ->
-          h4 "Registra a tus invitados por invitación o familia"
-
-          p ->
-            strong "1. Escribe el nombre de la invitación."
-            br()
-            span "Ejemplo: 'Familia Perez Martinez' o 'Carlos Hernandez y Sra.'"
-            br()
-            span "Consejo: Usa 'Enter' en lugar de dar click en 'Agregar'"
-
-          p ->
-            strong "2. Agrega el nombre de las personas en esa invitación."
-            br()
-            span "Consejo: Usa 'Enter' en lugar de dar click en 'Agregar'"
-
-          p ->
-            strong "3. Da click en Guarda invitación"
-
-      unless $("#app").data("listId")
-        if data.list.invitations.length >= 2
-          div ".alert.alert-warning", style: "margin-top: 1em", ->
-            p "Los datos de esta lista no se guardan y se perderán al refrescar el navegador."
-            p "Registrate para crear listas y guardar los datos en tu cuenta."
+      onboardingMessageView(data.list)
+      storageMessageView(data.list)
 
 
 class Page
