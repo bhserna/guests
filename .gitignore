@@ -5,3 +5,4 @@ db/guests
 node_modules/
 public/bundle.js
 public/tests_bundle.js
+db/guests
