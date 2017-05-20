@@ -10,114 +10,108 @@ module "Add guests by invitation", (hooks) ->
     @store = new StoreSpy(new MemoryStore)
     @page = new TestDisplay
     @app = new GuestsApp(@store, @page)
-    @app.addInvitation()
 
   test "knows is a new invitation", (assert) ->
-    assert.ok @page.editor.isNewInvitation
+    invitation = @app.currentInvitation()
+    assert.ok invitation.isNewInvitation
 
   test "on init is clean", (assert) ->
-    assert.equal @page.editor.title, ""
-    assert.equal @page.editor.guests.length, 0
-    assert.equal @page.list.invitations.length, 0
+    invitation = @app.currentInvitation()
+    assert.equal invitation.title, ""
+    assert.equal invitation.guests.length, 0
+    assert.equal invitation.phone, ""
 
-  test "set the invitation title", (assert) ->
-    @app.editor.addTitle("Serna Moreno")
-    assert.equal @page.editor.title, "Serna Moreno"
+  test "add invitation title", (assert) ->
+    invitation = @app.addInvitationTitle("Serna Moreno")
+    assert.equal invitation.title, "Serna Moreno"
+    assert.notOk invitation.isEditingTitle
 
-  test "set the invitation title and then edit it", (assert) ->
-    assert.ok @page.editor.isEditingTitle
+  test "turn on title edition", (assert) ->
+    invitation = @app.addInvitationTitle("Serna Moreno")
+    assert.notOk invitation.isEditingTitle
+    invitation = @app.turnOnTitleEdition()
+    assert.ok invitation.isEditingTitle
 
-    @app.editor.addTitle("Serna More")
-    assert.notOk @page.editor.isEditingTitle
-    assert.equal @page.editor.title, "Serna More"
+  test "edit title", (assert) ->
+    @app.addInvitationTitle("Serna More")
+    invitation = @app.addInvitationTitle("Serna Moreno")
+    assert.equal invitation.title, "Serna Moreno"
+    assert.notOk invitation.isEditingTitle
 
-    @app.editor.turnOnTitleEdition()
-    assert.ok @page.editor.isEditingTitle
-    assert.equal @page.editor.title, "Serna More"
+  test "add a guest", (assert) ->
+    invitation = @app.addGuest(name: "Benito Serna")
+    assert.equal invitation.guests.length, 1
+    assert.equal first(invitation.guests).name, "Benito Serna"
 
-    @app.editor.addTitle("Serna Moreno")
-    assert.notOk @page.editor.isEditingTitle
-    assert.equal @page.editor.title, "Serna Moreno"
+  test "turn on guest edition", (assert) ->
+    invitation = @app.addGuest(name: "Benito")
+    assert.notOk (guest = first(invitation.guests)).isEditing
+    invitation = @app.turnOnGuestEdition(guest.id)
+    assert.ok first(invitation.guests).isEditing
 
-  test "add a guest to the new invitation", (assert) ->
-    @app.editor.addTitle("Serna Moreno")
-    @app.editor.addGuest(name: "Benito Serna")
-    assert.equal @page.editor.guests.length, 1
-    assert.equal first(@page.editor.guests).name, "Benito Serna"
-
-  test "edit guest from the invitation's guest list", (assert) ->
-    @app.editor.addTitle("Serna Moreno")
-    @app.editor.addGuest(name: "Benito")
-    getGuest = => first(@page.editor.guests)
-    assert.notOk getGuest().isEditing
-
-    @app.editor.turnOnGuestEdition(getGuest().id)
-    assert.ok getGuest().isEditing
-
-    @app.editor.updateGuest(getGuest().id, name: "Benito Serna")
-    assert.equal getGuest().name, "Benito Serna"
+  test "edit guest", (assert) ->
+    invitation = @app.addGuest(name: "Benito")
+    invitation = @app.updateGuest(first(invitation.guests).id, name: "Benito Serna")
+    assert.equal first(invitation.guests).name, "Benito Serna"
 
   test "delete guest from the new invitation", (assert) ->
-    @app.editor.addTitle("Serna Moreno")
-    @app.editor.addGuest(name: "Benito")
-    getGuest = => first(@page.editor.guests)
-
-    @app.editor.deleteGuest(getGuest().id)
-    assert.equal @page.editor.guests.length, 0
+    invitation = @app.addGuest(name: "Benito")
+    invitation = @app.deleteGuest(first(invitation.guests).id)
+    assert.equal invitation.guests.length, 0
 
   test "add more than one guests to the invitation", (assert) ->
-    @app.editor.addTitle("Serna Moreno")
-    @app.editor.addGuest(name: "Benito Serna")
-    @app.editor.addGuest(name: "Maripaz Moreno")
-    assert.equal @page.editor.guests.length, 2
-    assert.equal second(@page.editor.guests).name, "Maripaz Moreno"
+    @app.addGuest(name: "Benito Serna")
+    invitation = @app.addGuest(name: "Maripaz Moreno")
+    assert.equal invitation.guests.length, 2
+    assert.equal second(invitation.guests).name, "Maripaz Moreno"
+
+  test "turn on phone edition", (assert) ->
+    invitation = @app.currentInvitation()
+    assert.notOk invitation.isEditingPhone
+    invitation = @app.turnOnPhoneEdition()
+    assert.ok invitation.isEditingPhone
 
   test "add phone", (assert) ->
-    @app.editor.addTitle("Serna Moreno")
-    assert.notOk @page.editor.isEditingPhone
+    invitation = @app.updatePhone("12341234")
+    assert.notOk invitation.isEditingPhone
+    assert.equal invitation.phone, "12341234"
 
-    @app.editor.turnOnPhoneEdition()
-    assert.ok @page.editor.isEditingPhone
-
-    @app.editor.updatePhone("12341234")
-    assert.notOk @page.editor.isEditingPhone
-    assert.equal @page.editor.phone, "12341234"
+  test "turn on email edition", (assert) ->
+    invitation = @app.currentInvitation()
+    assert.notOk invitation.isEditingEmail
+    invitation = @app.turnOnEmailEdition()
+    assert.ok invitation.isEditingEmail
 
   test "add email", (assert) ->
-    @app.editor.addTitle("Serna Moreno")
-    assert.notOk @page.editor.isEditingEmail
+    invitation = @app.updateEmail("b@e.com")
+    assert.notOk invitation.isEditingEmail
+    assert.equal invitation.email, "b@e.com"
 
-    @app.editor.turnOnEmailEdition()
-    assert.ok @page.editor.isEditingEmail
+  test "save starts a new invitation", (assert) ->
+    @app.addInvitationTitle("Serna Moreno")
+    @app.addGuest("Benito Serna")
+    @app.updatePhone("1234")
+    @app.updateEmail("b@g")
+    @app.saveInvitation()
+    invitation = @app.currentInvitation()
+    assert.equal invitation.title, ""
+    assert.equal invitation.guests.length, 0
+    assert.equal invitation.phone, ""
+    assert.equal invitation.email, null
 
-    @app.editor.updateEmail("b@e.com")
-    assert.notOk @page.editor.isEditingEmail
-    assert.equal @page.editor.email, "b@e.com"
-
-  test "after commit the invitation is added to the list", (assert) ->
-    addInvitation(@app, "Inv 1", ["guest1", "guest2"], "1234", "b@g.com")
-    invitation = first @page.list.invitations
-    assert.equal @page.list.invitations.length, 1
-    assert.equal invitation.title, "Inv 1"
-    assert.equal first(invitation.guests).name, "guest1"
-    assert.equal second(invitation.guests).name, "guest2"
-    assert.equal invitation.phone, "1234"
-    assert.equal invitation.email, "b@g.com"
-
-  test "after commits the editor is cleaned", (assert) ->
-    addInvitation(@app, "Inv 1", ["guest1", "guest2"], "1234", "b@g.com")
-    assert.equal @page.editor.title, ""
-    assert.equal @page.editor.guests.length, 0
-
-  test "after commit the invitation is sended to the store", (assert) ->
-    addInvitation(@app, "Inv 1", ["guest1", "guest2"], "1234", "b@g.com")
+  test "save, saves the record", (assert) ->
+    @app.addInvitationTitle("Serna Moreno")
+    @app.addGuest(name: "Benito Serna")
+    @app.addGuest(name: "Maripaz Moreno")
+    @app.updatePhone("1234")
+    @app.updateEmail("b@g.com")
+    @app.saveInvitation()
     call = first @store.allFunctionCalls()
     assert.equal call.name, "saveRecord"
-
-    invitation = call.params
-    assert.equal invitation.title, "Inv 1"
-    assert.equal first(invitation.guests).name, "guest1"
-    assert.equal second(invitation.guests).name, "guest2"
-    assert.equal invitation.phone, "1234"
-    assert.equal invitation.email, "b@g.com"
+    record = call.params
+    assert.equal record.title, "Serna Moreno"
+    assert.equal first(record.guests).name, "Benito Serna"
+    assert.equal second(record.guests).name, "Maripaz Moreno"
+    assert.equal record.phone, "1234"
+    assert.equal record.email, "b@g.com"
 

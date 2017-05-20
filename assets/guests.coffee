@@ -137,6 +137,44 @@ class window.GuestsApp
     @list = new InvitationsListControl(@, @store, @display)
     @addInvitation()
 
+  currentInvitation: ->
+    @editor.invitation
+
+  addInvitationTitle: (title) ->
+    @editor.addTitle(title)
+
+  turnOnTitleEdition: ->
+    @editor.turnOnTitleEdition()
+
+  addGuest: (attrs) ->
+    @editor.addGuest(attrs)
+
+  turnOnGuestEdition: (guestId) ->
+    @editor.turnOnGuestEdition(guestId)
+
+  updateGuest: (guestId, attrs) ->
+    @editor.updateGuest(guestId, attrs)
+
+  deleteGuest: (guestId) ->
+    @editor.deleteGuest(guestId)
+
+  turnOnPhoneEdition: ->
+    @editor.turnOnPhoneEdition()
+
+  updatePhone: (phone) ->
+    @editor.updatePhone(phone)
+
+  turnOnEmailEdition: ->
+    @editor.turnOnEmailEdition()
+
+  updateEmail: (email) ->
+    @editor.updateEmail(email)
+
+  saveInvitation: ->
+    @editor.commit()
+
+  # old
+
   addInvitation: ->
     @editor = new NewInvitationControl(new EditableInvitation, @, @display)
 
