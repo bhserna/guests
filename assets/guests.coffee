@@ -178,8 +178,9 @@ class window.GuestsApp
   addInvitation: ->
     @editor = new NewInvitationControl(new EditableInvitation, @, @display)
 
-  editInvitation: (invitation) ->
-    @editor = new EditInvitationControl(new EditableInvitation(invitation), @, @display)
+  editInvitation: (id) ->
+    @editor = new EditInvitationControl(new EditableInvitation(@store.find(id)), @, @display)
+    @currentInvitation()
 
   commitAddition: (invitation) ->
     @list.addInvitation(invitation)
@@ -327,7 +328,14 @@ class window.MemoryStore
   loadRecords: (listener) ->
     listener.recordsLoaded(@records)
 
+  first: ->
+    @records[0]
+
+  find: (id) ->
+    _.find @records, (record) -> record.id is id
+
   saveRecord: (record) ->
+    record.id = @records.length + 1
     @records.push(record)
 
   updateRecord: (newRecord) ->
