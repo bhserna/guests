@@ -22,43 +22,53 @@ class EditableInvitation extends Invitation
   addTitle: (title) ->
     @title = title
     @isEditingTitle = false
+    @
 
   turnOnTitleEdition: ->
     @isEditingTitle = true
+    @
 
   addGuest: (attrs) ->
     attrs.id = @guests.length + 1
     guest = new EditableGuest(attrs)
     @guests.push(guest)
+    @
 
   turnOnGuestEdition: (id) ->
     guest = @findGuest(id)
     guest.toEditionMode()
+    @
 
   updateGuest: (id, attrs) ->
     guest = @findGuest(id)
     guest.setName(attrs.name)
     guest.turnOffEditionMode()
+    @
 
   deleteGuest: (id) ->
     @guests = (guest for guest in @guests when guest.id isnt id)
+    @
 
   findGuest: (id) ->
     (guest for guest in @guests when guest.id is id)[0]
 
   turnOnPhoneEdition: ->
     @isEditingPhone = true
+    @
 
   updatePhone: (phone) ->
     @phone = phone
     @isEditingPhone = false
+    @
 
   turnOnEmailEdition: ->
     @isEditingEmail = true
+    @
 
   updateEmail: (email) ->
     @email = email
     @isEditingEmail = false
+    @
 
 class EditableGuest extends Guest
   isEditing: false
@@ -135,60 +145,54 @@ class InvitationsList
 class window.GuestsApp
   constructor: (@store, @display) ->
     @list = new InvitationsListControl(@, @store, @display)
-    @addInvitation()
-
-  currentInvitation: ->
-    @editor.invitation
-
-  addInvitationTitle: (title) ->
-    @editor.addTitle(title)
-
-  turnOnTitleEdition: ->
-    @editor.turnOnTitleEdition()
-
-  addGuest: (attrs) ->
-    @editor.addGuest(attrs)
-
-  turnOnGuestEdition: (guestId) ->
-    @editor.turnOnGuestEdition(guestId)
-
-  updateGuest: (guestId, attrs) ->
-    @editor.updateGuest(guestId, attrs)
-
-  deleteGuest: (guestId) ->
-    @editor.deleteGuest(guestId)
-
-  turnOnPhoneEdition: ->
-    @editor.turnOnPhoneEdition()
-
-  updatePhone: (phone) ->
-    @editor.updatePhone(phone)
-
-  turnOnEmailEdition: ->
-    @editor.turnOnEmailEdition()
-
-  updateEmail: (email) ->
-    @editor.updateEmail(email)
-
-  saveInvitation: ->
-    @editor.commit()
-
-  # old
+    @invitation = new EditableInvitation()
 
   addInvitation: ->
-    @editor = new NewInvitationControl(new EditableInvitation, @, @display)
+
+  currentInvitation: ->
+    @invitation
 
   editInvitation: (id) ->
-    @editor = new EditInvitationControl(new EditableInvitation(@store.find(id)), @, @display)
-    @currentInvitation()
+    @invitation = new EditableInvitation(@store.find(id))
 
-  commitAddition: (invitation) ->
-    @list.addInvitation(invitation)
-    @addInvitation()
+  addInvitationTitle: (title) ->
+    @invitation.addTitle(title)
 
-  commitEdition: (invitation)->
-    @list.updateInvitation(invitation)
-    @addInvitation()
+  turnOnTitleEdition: ->
+    @invitation.turnOnTitleEdition()
+
+  addGuest: (attrs) ->
+    @invitation.addGuest(attrs)
+
+  turnOnGuestEdition: (guestId) ->
+    @invitation.turnOnGuestEdition(guestId)
+
+  updateGuest: (guestId, attrs) ->
+    @invitation.updateGuest(guestId, attrs)
+
+  deleteGuest: (guestId) ->
+    @invitation.deleteGuest(guestId)
+
+  turnOnPhoneEdition: ->
+    @invitation.turnOnPhoneEdition()
+
+  updatePhone: (phone) ->
+    @invitation.updatePhone(phone)
+
+  turnOnEmailEdition: ->
+    @invitation.turnOnEmailEdition()
+
+  updateEmail: (email) ->
+    @invitation.updateEmail(email)
+
+  saveInvitation: ->
+    if @invitation.isNewInvitation
+      @list.addInvitation(@invitation)
+    else
+      @list.updateInvitation(@invitation)
+    @invitation = new EditableInvitation()
+
+  # old
 
   startInvitationAssistanceConfirmation: (invitation) ->
     @confirmator = new AssistanceConfirmationControl(invitation, @, @display)
@@ -268,58 +272,6 @@ class InvitationsListControl
 
   startInvitationAssistanceConfirmation: (id) ->
     @app.startInvitationAssistanceConfirmation(@findInvitation(id))
-
-class EditInvitationControl
-  constructor: (@invitation, @app, @display) ->
-
-  updateDisplay: ->
-    @display.renderEditor(@invitation)
-
-  addTitle: (title) ->
-    @invitation.addTitle(title)
-    @invitation
-
-  turnOnTitleEdition: ->
-    @invitation.turnOnTitleEdition()
-    @invitation
-
-  addGuest: (attrs) ->
-    @invitation.addGuest(attrs)
-    @invitation
-
-  turnOnGuestEdition: (id) ->
-    @invitation.turnOnGuestEdition(id)
-    @invitation
-
-  updateGuest: (id, attrs) ->
-    @invitation.updateGuest(id, attrs)
-    @invitation
-
-  deleteGuest: (id) ->
-    @invitation.deleteGuest(id)
-    @invitation
-
-  turnOnPhoneEdition: ->
-    @invitation.turnOnPhoneEdition()
-    @invitation
-
-  updatePhone: (phone) ->
-    @invitation.updatePhone(phone)
-    @invitation
-
-  turnOnEmailEdition: ->
-    @invitation.turnOnEmailEdition()
-    @invitation
-
-  updateEmail: (email) ->
-    @invitation.updateEmail(email)
-    @invitation
-
-  commit: ->
-    @app.commitEdition(@invitation)
-
-class NewInvitationControl extends EditInvitationControl
-  commit: -> @app.commitAddition(@invitation)
 
 class window.MemoryStore
   constructor: (@records = []) ->

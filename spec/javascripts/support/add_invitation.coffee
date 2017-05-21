@@ -1,9 +1,8 @@
 addInvitation = (app, title, guests, phone, email) ->
-  app.addInvitation()
-  app.editor.addTitle(title)
-  app.editor.addGuest(name: guest) for guest in guests
-  app.editor.updatePhone(phone)
-  app.editor.updateEmail(email)
-  app.editor.commit()
+  app.addInvitationTitle(title)
+  app.addGuest(name: guest) for guest in guests
+  app.updatePhone(phone)
+  app.updateEmail(email)
+  app.saveInvitation()
 
 module.exports = addInvitation
