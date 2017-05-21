@@ -7,60 +7,65 @@ onAction = (event, selector, callback) ->
     callback($el = $(this))
 
 store = if $("#app").data("listId") then RemoteStore else (new MemoryStore)
-app = new GuestsApp(store, new View)
+view = new View
+app = new GuestsApp(store, view)
 
-$ -> $("#invitationTitle").focus()
+
+$ ->
+  view.renderEditor(app.currentInvitation())
+  $("#invitationTitle").focus()
 
 onAction "submit", "#addInvitationTitle", ($form) ->
-  app.editor.addTitle($form.find("#invitationTitle").val())
+  view.renderEditor app.addInvitationTitle($form.find("#invitationTitle").val())
   $("#name").focus()
 
 onAction "submit", "#addGuest", ($form) ->
-  app.editor.addGuest(name: $form.find("#name").val())
+  view.renderEditor app.addGuest(name: $form.find("#name").val())
   $("#name").focus()
 
 onAction "click", "#commitInvitation", ->
-  app.editor.commit()
+  app.saveInvitation()
+  view.renderEditor app.currentInvitation()
   $("#invitationTitle").focus()
 
 onAction "click", "#editInvitationTitle", ->
-  app.editor.turnOnTitleEdition()
+  view.renderEditor app.turnOnTitleEdition()
   $("#invitationTitle").focus()
 
 onAction "click", "#editInvitationGuest", ($el) ->
   id = $el.data("id")
-  app.editor.turnOnGuestEdition(id)
+  view.renderEditor app.turnOnGuestEdition(id)
   $("#guest_#{id}_name").focus()
 
 onAction "click", "#deleteInvitationGuest", ($el) ->
   id = $el.data("id")
-  app.editor.deleteGuest(id)
+  view.renderEditor app.deleteGuest(id)
   $("#name").focus()
 
 onAction "submit", "#updateGuest", ($form) ->
   id = $form.data("id")
-  app.editor.updateGuest(id, name: $form.find("#guest_#{id}_name").val())
+  view.renderEditor app.updateGuest(id, name: $form.find("#guest_#{id}_name").val())
   $("#name").focus()
 
 onAction "click", "#editInvitationPhone", ->
-  app.editor.turnOnPhoneEdition()
+  view.renderEditor app.turnOnPhoneEdition()
   $("#phone").focus()
 
 onAction "submit", "#updatePhone", ($form) ->
-  app.editor.updatePhone($form.find("#phone").val())
+  view.renderEditor app.updatePhone($form.find("#phone").val())
   $("#name").focus()
 
 onAction "click", "#editInvitationEmail", ->
-  app.editor.turnOnEmailEdition()
+  view.renderEditor app.turnOnEmailEdition()
   $("#email").focus()
 
 onAction "submit", "#updateEmail", ($form) ->
-  app.editor.updateEmail($form.find("#email").val())
+  view.renderEditor app.updateEmail($form.find("#email").val())
   $("#name").focus()
 
 onAction "click", "#editInvitation", ($el) ->
   id = $el.data("id")
-  app.list.editInvitation(id)
+  view.renderEditor app.editInvitation(id)
   $("#name").focus()
 
 onAction "click", "#deleteInvitation", ($el) ->

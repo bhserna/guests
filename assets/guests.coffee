@@ -271,50 +271,49 @@ class InvitationsListControl
 
 class EditInvitationControl
   constructor: (@invitation, @app, @display) ->
-    @updateDisplay()
 
   updateDisplay: ->
     @display.renderEditor(@invitation)
 
   addTitle: (title) ->
     @invitation.addTitle(title)
-    @updateDisplay()
+    @invitation
 
   turnOnTitleEdition: ->
     @invitation.turnOnTitleEdition()
-    @updateDisplay()
+    @invitation
 
   addGuest: (attrs) ->
     @invitation.addGuest(attrs)
-    @updateDisplay()
+    @invitation
 
   turnOnGuestEdition: (id) ->
     @invitation.turnOnGuestEdition(id)
-    @updateDisplay()
+    @invitation
 
   updateGuest: (id, attrs) ->
     @invitation.updateGuest(id, attrs)
-    @updateDisplay()
+    @invitation
 
   deleteGuest: (id) ->
     @invitation.deleteGuest(id)
-    @updateDisplay()
+    @invitation
 
   turnOnPhoneEdition: ->
     @invitation.turnOnPhoneEdition()
-    @updateDisplay()
+    @invitation
 
   updatePhone: (phone) ->
     @invitation.updatePhone(phone)
-    @updateDisplay()
+    @invitation
 
   turnOnEmailEdition: ->
     @invitation.turnOnEmailEdition()
-    @updateDisplay()
+    @invitation
 
   updateEmail: (email) ->
     @invitation.updateEmail(email)
-    @updateDisplay()
+    @invitation
 
   commit: ->
     @app.commitEdition(@invitation)

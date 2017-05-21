@@ -49,6 +49,6 @@ module "Edit invitation", (hooks) ->
     @app.saveInvitation()
     invitation = @app.currentInvitation()
     assert.ok invitation.isNewInvitation
-    assert.equal @page.editor.title, ""
-    assert.equal @page.editor.guests.length, 0
+    assert.equal invitation.title, ""
+    assert.equal invitation.guests.length, 0
 
