@@ -17,42 +17,42 @@ module "Show invitations list", (hooks) ->
     addInvitation(@app, "Inv 3", ["guest1"])
 
   test "show title", (assert) ->
-    invitation = first @page.list.invitations
+    invitation = first @app.getInvitations()
     assert.equal invitation.title, "Inv 1"
 
   test "has the guests names", (assert) ->
-    invitation = first @page.list.invitations
+    invitation = first @app.getInvitations()
     guests = invitation.guests
     assert.equal first(guests).name, "guest1"
     assert.equal second(guests).name, "guest2"
 
   test "has the guests count", (assert) ->
-    invitation = first @page.list.invitations
+    invitation = first @app.getInvitations()
     assert.equal invitation.guests.length, 2
 
   test "has phone", (assert) ->
-    invitation = first @page.list.invitations
+    invitation = first @app.getInvitations()
     assert.equal invitation.phone, "23452345"
 
   test "has email", (assert) ->
-    invitation = first @page.list.invitations
+    invitation = first @app.getInvitations()
     assert.equal invitation.email, "a@b.com"
 
   test "has the total invitations count", (assert) ->
-    assert.equal @page.list.invitations.length, 3
+    assert.equal @app.getInvitationsCount(), 3
 
   test "has the total guests", (assert) ->
-    assert.equal @page.list.totalGuests(), 6
+    assert.equal @app.getTotalGuests(), 6
 
-    invitation = first @page.list.invitations
-    @app.list.deleteInvitation(invitation.id)
-    assert.equal @page.list.totalGuests(), 4
+    invitation = first @app.getInvitations()
+    @app.deleteInvitation(invitation.id)
+    assert.equal @app.getTotalGuests(), 4
 
-    invitation = first @page.list.invitations
-    @app.list.deleteInvitation(invitation.id)
-    assert.equal @page.list.totalGuests(), 1
+    invitation = first @app.getInvitations()
+    @app.deleteInvitation(invitation.id)
+    assert.equal @app.getTotalGuests(), 1
 
-    invitation = first @page.list.invitations
-    @app.list.deleteInvitation(invitation.id)
-    assert.equal @page.list.totalGuests(), 0
+    invitation = first @app.getInvitations()
+    @app.deleteInvitation(invitation.id)
+    assert.equal @app.getTotalGuests(), 0
 

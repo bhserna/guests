@@ -14,55 +14,47 @@ module "Confirm invitation invitation assistance", (hooks) ->
     addInvitation(@app, "Inv 1", ["guest1", "guest2"], "12341234")
 
   test "unstarted", (assert) ->
-    listInvitation = => first @page.list.invitations
-    assert.notOk @app.confirmator
-    assert.notOk @page.confirmator.title
-    assert.notOk listInvitation().isAssistanceConfirmed
-    assert.equal @page.list.totalConfirmedGuests(), 0
+    invitation = => first @app.getInvitations()
+    assert.notOk invitation().isAssistanceConfirmed
+    assert.equal @app.totalConfirmedGuests(), 0
 
   test "confirm", (assert) ->
-    listInvitation = => first @page.list.invitations
+    invitation = => first @app.getInvitations()
 
-    @app.list.startInvitationAssistanceConfirmation(listInvitation().id)
-    assert.equal @page.confirmator.title, "Inv 1"
-    assert.equal @page.confirmator.phone, "12341234"
-    assert.equal @page.confirmator.confirmedGuestsCount, undefined
-    assert.equal @page.list.totalConfirmedGuests(), 0
+    confirmation = @app.newAssistanceConfirmation(invitation().id)
+    assert.equal confirmation.title, "Inv 1"
+    assert.equal confirmation.phone, "12341234"
+    assert.equal confirmation.confirmedGuestsCount, undefined
+    assert.equal @app.totalConfirmedGuests(), 0
 
-    @app.confirmator.confirmGuests(2)
-    assert.notOk @app.confirmator
-    assert.notOk @page.confirmator.title
-    assert.ok listInvitation().isAssistanceConfirmed
-    assert.equal listInvitation().confirmedGuestsCount, 2
-    assert.equal @page.list.totalConfirmedGuests(), 2
+    assert.ok @app.confirmGuests(2)
+    assert.ok invitation().isAssistanceConfirmed
+    assert.equal invitation().confirmedGuestsCount, 2
+    assert.equal @app.totalConfirmedGuests(), 2
 
     call = last @store.allFunctionCalls()
     assert.equal call.name, "updateRecord"
-    assert.equal call.params, listInvitation()
+    assert.equal call.params, invitation()
 
   test "confirm without value", (assert) ->
-    listInvitation = => first @page.list.invitations
-    @app.list.startInvitationAssistanceConfirmation(listInvitation().id)
-    @app.confirmator.confirmGuests("")
-    assert.equal @page.confirmator.title, "Inv 1"
-    assert.equal @page.confirmator.phone, "12341234"
-    assert.equal @page.confirmator.confirmedGuestsCount, undefined
-    assert.equal @page.list.totalConfirmedGuests(), 0
+    invitation = => first @app.getInvitations()
+    confirmation = @app.newAssistanceConfirmation(invitation().id)
+    assert.notOk @app.confirmGuests("")
+    assert.equal @app.totalConfirmedGuests(), 0
 
   test "update without value", (assert) ->
-    listInvitation = => first @page.list.invitations
-    @app.list.startInvitationAssistanceConfirmation(listInvitation().id)
-    @app.confirmator.confirmGuests(2)
-    @app.list.startInvitationAssistanceConfirmation(listInvitation().id)
-    @app.confirmator.confirmGuests("")
-    assert.equal @page.confirmator.title, "Inv 1"
-    assert.equal @page.confirmator.phone, "12341234"
-    assert.equal @page.confirmator.confirmedGuestsCount, 2
+    invitation = => first @app.getInvitations()
+    @app.newAssistanceConfirmation(invitation().id)
+    @app.confirmGuests(2)
+    @app.newAssistanceConfirmation(invitation().id)
+    @app.confirmGuests("")
+    confirmation = @app.newAssistanceConfirmation(invitation().id)
+    assert.equal confirmation.confirmedGuestsCount, 2
+    assert.equal @app.totalConfirmedGuests(), 2
 
   test "cancel", (assert) ->
-    listInvitation = => first @page.list.invitations
-    @app.list.startInvitationAssistanceConfirmation(listInvitation().id)
-    @app.confirmator.cancel()
-    assert.notOk @app.confirmator
-    assert.notOk @page.confirmator.title
-    assert.notOk listInvitation().isAssistanceConfirmed
+    invitation = => first @app.getInvitations()
+    @app.newAssistanceConfirmation(invitation().id)
+    @app.cancelAssistanceConfirmation()
+    assert.notOk @app.confirmGuests(2)
+    assert.equal @app.totalConfirmedGuests(), 0

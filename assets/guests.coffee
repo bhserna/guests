@@ -192,16 +192,45 @@ class window.GuestsApp
       @list.updateInvitation(@invitation)
     @invitation = new EditableInvitation()
 
+  getInvitations: ->
+    @list.list.invitations
+
+  getInvitationsCount: ->
+    @list.list.invitations.length
+
+  getTotalGuests: ->
+    @list.list.totalGuests()
+
+  deleteInvitation: (id) ->
+    @list.deleteInvitation(id)
+
+  totalDeliveredInvitations: ->
+    @list.list.totalDeliveredInvitations()
+
+  confirmInvitationDelivery: (id) ->
+    @list.confirmInvitationDelivery(id)
+
+  unconfirmInvitationDelivery: (id) ->
+    @list.unconfirmInvitationDelivery(id)
+
+  totalConfirmedGuests: ->
+    @list.list.totalConfirmedGuests()
   # old
 
-  startInvitationAssistanceConfirmation: (invitation) ->
+  newAssistanceConfirmation: (id) ->
+    invitation = @store.find(id)
     @confirmator = new AssistanceConfirmationControl(invitation, @, @display)
+    @confirmator.invitation
+
+  confirmGuests: (count) ->
+    if @confirmator
+      @confirmator.confirmGuests(count)
 
   commitInvitationConfirmation: (invitation) ->
     @list.updateInvitation(invitation)
     @confirmator = undefined
 
-  cancelInvitationConfirmation: (invitation) ->
+  cancelAssistanceConfirmation: (invitation) ->
     @confirmator = undefined
 
 class AssistanceConfirmationControl
