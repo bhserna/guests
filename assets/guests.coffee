@@ -143,8 +143,8 @@ class InvitationsList
     invitation = new Invitation(attrs)
 
 class window.GuestsApp
-  constructor: (@store, @display) ->
-    @list = new InvitationsListControl(@, @store, @display)
+  constructor: (@store) ->
+    @list = new InvitationsListControl(@, @store)
     @invitation = new EditableInvitation()
 
   addInvitation: ->
@@ -215,38 +215,36 @@ class window.GuestsApp
 
   totalConfirmedGuests: ->
     @list.list.totalConfirmedGuests()
-  # old
 
   newAssistanceConfirmation: (id) ->
     invitation = @store.find(id)
-    @confirmator = new AssistanceConfirmationControl(invitation, @, @display)
+    @confirmator = new AssistanceConfirmationControl(invitation, @)
     @confirmator.invitation
 
   confirmGuests: (count) ->
     if @confirmator
       @confirmator.confirmGuests(count)
 
+  cancelAssistanceConfirmation: (invitation) ->
+    @confirmator = undefined
+
+  # old
   commitInvitationConfirmation: (invitation) ->
     @list.updateInvitation(invitation)
     @confirmator = undefined
 
-  cancelAssistanceConfirmation: (invitation) ->
-    @confirmator = undefined
-
 class AssistanceConfirmationControl
-  constructor: (invitation, @app, @display) ->
+  constructor: (invitation, @app) ->
     @invitation = new AssistanceConfirmableInvitation(invitation)
-    @display.renderConfirmator(@invitation)
 
   confirmGuests: (count) ->
     if @invitation.validGuestsConfirmationCount(count)
       @invitation.setConfirmedGuests(count)
       @app.commitInvitationConfirmation(@invitation)
-      @display.removeConfirmator()
+      true
 
   cancel: ->
     @app.cancelInvitationConfirmation(@invitation)
-    @display.removeConfirmator()
 
   class AssistanceConfirmableInvitation extends Invitation
     validGuestsConfirmationCount: (count) ->
@@ -258,15 +256,11 @@ class AssistanceConfirmationControl
       @isAssistanceConfirmed = true
 
 class InvitationsListControl
-  constructor: (@app, @store, @display) ->
+  constructor: (@app, @store) ->
     @store.loadRecords(@)
 
   recordsLoaded: (records) ->
     @list = new InvitationsList(records)
-    @updateDisplay()
-
-  updateDisplay: ->
-    @display.renderList(@list)
 
   findInvitation: (id) ->
     @list.findInvitation(id)
@@ -274,12 +268,10 @@ class InvitationsListControl
   deleteInvitation: (id) ->
     @list.deleteInvitation(id)
     @store.deleteRecord(id)
-    @updateDisplay()
 
   addInvitation: (title, guests) ->
     invitation = @list.addInvitation(title, guests)
     @store.saveRecord(invitation)
-    @updateDisplay()
 
   editInvitation: (id) ->
     @app.editInvitation(@findInvitation(id))
@@ -287,17 +279,14 @@ class InvitationsListControl
   updateInvitation: (id, title, guests) ->
     invitation = @list.updateInvitation(id, title, guests)
     @store.updateRecord(invitation)
-    @updateDisplay()
 
   confirmInvitationDelivery: (id) ->
     invitation = @list.confirmInvitationDelivery(id)
     @store.updateRecord(invitation)
-    @updateDisplay()
 
   unconfirmInvitationDelivery: (id) ->
     invitation = @list.unconfirmInvitationDelivery(id)
     @store.updateRecord(invitation)
-    @updateDisplay()
 
   startInvitationAssistanceConfirmation: (id) ->
     @app.startInvitationAssistanceConfirmation(@findInvitation(id))

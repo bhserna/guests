@@ -106,21 +106,27 @@ editInvitationView = renderable (editor) ->
     div style: "margin-bottom: 1em", ->
       button "#commitInvitation.btn.btn-primary", "Guardar invitación"
 
-invitationsView = renderable (list) ->
+invitationsView = renderable ({
+  invitations,
+  invitationsCount,
+  totalGuests,
+  totalDeliveredInvitations,
+  totalConfirmedGuests
+  }) ->
   div ".page-header", ->
-    h3 "Invitaciones (#{list.invitations.length})"
+    h3 "Invitaciones (#{invitationsCount})"
   div ".table-responsive", ->
     table ".table", ->
       thead ->
         tr ->
           th "Título"
-          th "Invitados (#{list.totalGuests()})"
+          th "Invitados (#{totalGuests})"
           th "Contacto"
-          th ".text-center", "¿Entregada? (#{list.totalDeliveredInvitations()})"
-          th ".text-center", "Confirmados (#{list.totalConfirmedGuests()})"
+          th ".text-center", "¿Entregada? (#{totalDeliveredInvitations})"
+          th ".text-center", "Confirmados (#{totalConfirmedGuests})"
           th()
       tbody ->
-        for invitation in list.invitations
+        for invitation in invitations
           tr ->
             td invitation.title
             td ->
