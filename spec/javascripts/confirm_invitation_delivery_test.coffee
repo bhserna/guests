@@ -18,30 +18,30 @@ module "Confirm invitation delivery", (hooks) ->
     addInvitation(@app, "Inv 3", ["guest1", "guest2"])
 
   test "confirm", (assert) ->
-    invitation = => first @page.list.invitations
+    invitation = => first @app.getInvitations()
     assert.notOk invitation().isDelivered
-    assert.equal @page.list.totalDeliveredInvitations(), 0
+    assert.equal @app.totalDeliveredInvitations(), 0
 
-    @app.list.confirmInvitationDelivery(invitation().id)
+    @app.confirmInvitationDelivery(invitation().id)
     assert.ok invitation().isDelivered
-    assert.equal @page.list.totalDeliveredInvitations(), 1
+    assert.equal @app.totalDeliveredInvitations(), 1
 
     call = last @store.allFunctionCalls()
     assert.equal call.name, "updateRecord"
     assert.equal call.params, invitation()
 
   test "undo", (assert) ->
-    invitation = => first @page.list.invitations
+    invitation = => first @app.getInvitations()
     assert.notOk invitation().isDelivered
-    assert.equal @page.list.totalDeliveredInvitations(), 0
+    assert.equal @app.totalDeliveredInvitations(), 0
 
-    @app.list.confirmInvitationDelivery(invitation().id)
+    @app.confirmInvitationDelivery(invitation().id)
     assert.ok invitation().isDelivered
-    assert.equal @page.list.totalDeliveredInvitations(), 1
+    assert.equal @app.totalDeliveredInvitations(), 1
 
-    @app.list.unconfirmInvitationDelivery(invitation().id)
+    @app.unconfirmInvitationDelivery(invitation().id)
     assert.notOk invitation().isDelivered
-    assert.equal @page.list.totalDeliveredInvitations(), 0
+    assert.equal @app.totalDeliveredInvitations(), 0
 
     call = last @store.allFunctionCalls()
     assert.equal call.name, "updateRecord"

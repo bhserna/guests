@@ -15,13 +15,13 @@ module "Delete invitation", (hooks) ->
     addInvitation(@app, "Inv 1", ["guest1", "guest2"])
 
   test "removes the invitation", (assert) ->
-    invitation = first @page.list.invitations
-    @app.list.deleteInvitation(invitation.id)
-    assert.equal @page.list.invitations.length, 0
+    invitation = first @app.getInvitations()
+    @app.deleteInvitation(invitation.id)
+    assert.equal @app.getInvitationsCount(), 0
 
   test "removes the invitation in the store", (assert) ->
-    invitation = first @page.list.invitations
-    @app.list.deleteInvitation(invitation.id)
+    invitation = first @app.getInvitations()
+    @app.deleteInvitation(invitation.id)
     call = last @store.allFunctionCalls()
     assert.equal call.name, "deleteRecord"
     assert.equal call.params, invitation.id

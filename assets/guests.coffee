@@ -22,43 +22,53 @@ class EditableInvitation extends Invitation
   addTitle: (title) ->
     @title = title
     @isEditingTitle = false
+    @
 
   turnOnTitleEdition: ->
     @isEditingTitle = true
+    @
 
   addGuest: (attrs) ->
     attrs.id = @guests.length + 1
     guest = new EditableGuest(attrs)
     @guests.push(guest)
+    @
 
   turnOnGuestEdition: (id) ->
     guest = @findGuest(id)
     guest.toEditionMode()
+    @
 
   updateGuest: (id, attrs) ->
     guest = @findGuest(id)
     guest.setName(attrs.name)
     guest.turnOffEditionMode()
+    @
 
   deleteGuest: (id) ->
     @guests = (guest for guest in @guests when guest.id isnt id)
+    @
 
   findGuest: (id) ->
     (guest for guest in @guests when guest.id is id)[0]
 
   turnOnPhoneEdition: ->
     @isEditingPhone = true
+    @
 
   updatePhone: (phone) ->
     @phone = phone
     @isEditingPhone = false
+    @
 
   turnOnEmailEdition: ->
     @isEditingEmail = true
+    @
 
   updateEmail: (email) ->
     @email = email
     @isEditingEmail = false
+    @
 
 class EditableGuest extends Guest
   isEditing: false
@@ -133,48 +143,108 @@ class InvitationsList
     invitation = new Invitation(attrs)
 
 class window.GuestsApp
-  constructor: (@store, @display) ->
-    @list = new InvitationsListControl(@, @store, @display)
-    @addInvitation()
+  constructor: (@store) ->
+    @list = new InvitationsListControl(@, @store)
+    @invitation = new EditableInvitation()
 
   addInvitation: ->
-    @editor = new NewInvitationControl(new EditableInvitation, @, @display)
 
-  editInvitation: (invitation) ->
-    @editor = new EditInvitationControl(new EditableInvitation(invitation), @, @display)
+  currentInvitation: ->
+    @invitation
 
-  commitAddition: (invitation) ->
-    @list.addInvitation(invitation)
-    @addInvitation()
+  editInvitation: (id) ->
+    @invitation = new EditableInvitation(@store.find(id))
 
-  commitEdition: (invitation)->
-    @list.updateInvitation(invitation)
-    @addInvitation()
+  addInvitationTitle: (title) ->
+    @invitation.addTitle(title)
 
-  startInvitationAssistanceConfirmation: (invitation) ->
-    @confirmator = new AssistanceConfirmationControl(invitation, @, @display)
+  turnOnTitleEdition: ->
+    @invitation.turnOnTitleEdition()
 
+  addGuest: (attrs) ->
+    @invitation.addGuest(attrs)
+
+  turnOnGuestEdition: (guestId) ->
+    @invitation.turnOnGuestEdition(guestId)
+
+  updateGuest: (guestId, attrs) ->
+    @invitation.updateGuest(guestId, attrs)
+
+  deleteGuest: (guestId) ->
+    @invitation.deleteGuest(guestId)
+
+  turnOnPhoneEdition: ->
+    @invitation.turnOnPhoneEdition()
+
+  updatePhone: (phone) ->
+    @invitation.updatePhone(phone)
+
+  turnOnEmailEdition: ->
+    @invitation.turnOnEmailEdition()
+
+  updateEmail: (email) ->
+    @invitation.updateEmail(email)
+
+  saveInvitation: ->
+    if @invitation.isNewInvitation
+      @list.addInvitation(@invitation)
+    else
+      @list.updateInvitation(@invitation)
+    @invitation = new EditableInvitation()
+
+  getInvitations: ->
+    @list.list.invitations
+
+  getInvitationsCount: ->
+    @list.list.invitations.length
+
+  getTotalGuests: ->
+    @list.list.totalGuests()
+
+  deleteInvitation: (id) ->
+    @list.deleteInvitation(id)
+
+  totalDeliveredInvitations: ->
+    @list.list.totalDeliveredInvitations()
+
+  confirmInvitationDelivery: (id) ->
+    @list.confirmInvitationDelivery(id)
+
+  unconfirmInvitationDelivery: (id) ->
+    @list.unconfirmInvitationDelivery(id)
+
+  totalConfirmedGuests: ->
+    @list.list.totalConfirmedGuests()
+
+  newAssistanceConfirmation: (id) ->
+    invitation = @store.find(id)
+    @confirmator = new AssistanceConfirmationControl(invitation, @)
+    @confirmator.invitation
+
+  confirmGuests: (count) ->
+    if @confirmator
+      @confirmator.confirmGuests(count)
+
+  cancelAssistanceConfirmation: (invitation) ->
+    @confirmator = undefined
+
+  # old
   commitInvitationConfirmation: (invitation) ->
     @list.updateInvitation(invitation)
     @confirmator = undefined
 
-  cancelInvitationConfirmation: (invitation) ->
-    @confirmator = undefined
-
 class AssistanceConfirmationControl
-  constructor: (invitation, @app, @display) ->
+  constructor: (invitation, @app) ->
     @invitation = new AssistanceConfirmableInvitation(invitation)
-    @display.renderConfirmator(@invitation)
 
   confirmGuests: (count) ->
     if @invitation.validGuestsConfirmationCount(count)
       @invitation.setConfirmedGuests(count)
       @app.commitInvitationConfirmation(@invitation)
-      @display.removeConfirmator()
+      true
 
   cancel: ->
     @app.cancelInvitationConfirmation(@invitation)
-    @display.removeConfirmator()
 
   class AssistanceConfirmableInvitation extends Invitation
     validGuestsConfirmationCount: (count) ->
@@ -186,15 +256,11 @@ class AssistanceConfirmationControl
       @isAssistanceConfirmed = true
 
 class InvitationsListControl
-  constructor: (@app, @store, @display) ->
+  constructor: (@app, @store) ->
     @store.loadRecords(@)
 
   recordsLoaded: (records) ->
     @list = new InvitationsList(records)
-    @updateDisplay()
-
-  updateDisplay: ->
-    @display.renderList(@list)
 
   findInvitation: (id) ->
     @list.findInvitation(id)
@@ -202,12 +268,10 @@ class InvitationsListControl
   deleteInvitation: (id) ->
     @list.deleteInvitation(id)
     @store.deleteRecord(id)
-    @updateDisplay()
 
   addInvitation: (title, guests) ->
     invitation = @list.addInvitation(title, guests)
     @store.saveRecord(invitation)
-    @updateDisplay()
 
   editInvitation: (id) ->
     @app.editInvitation(@findInvitation(id))
@@ -215,73 +279,17 @@ class InvitationsListControl
   updateInvitation: (id, title, guests) ->
     invitation = @list.updateInvitation(id, title, guests)
     @store.updateRecord(invitation)
-    @updateDisplay()
 
   confirmInvitationDelivery: (id) ->
     invitation = @list.confirmInvitationDelivery(id)
     @store.updateRecord(invitation)
-    @updateDisplay()
 
   unconfirmInvitationDelivery: (id) ->
     invitation = @list.unconfirmInvitationDelivery(id)
     @store.updateRecord(invitation)
-    @updateDisplay()
 
   startInvitationAssistanceConfirmation: (id) ->
     @app.startInvitationAssistanceConfirmation(@findInvitation(id))
-
-class EditInvitationControl
-  constructor: (@invitation, @app, @display) ->
-    @updateDisplay()
-
-  updateDisplay: ->
-    @display.renderEditor(@invitation)
-
-  addTitle: (title) ->
-    @invitation.addTitle(title)
-    @updateDisplay()
-
-  turnOnTitleEdition: ->
-    @invitation.turnOnTitleEdition()
-    @updateDisplay()
-
-  addGuest: (attrs) ->
-    @invitation.addGuest(attrs)
-    @updateDisplay()
-
-  turnOnGuestEdition: (id) ->
-    @invitation.turnOnGuestEdition(id)
-    @updateDisplay()
-
-  updateGuest: (id, attrs) ->
-    @invitation.updateGuest(id, attrs)
-    @updateDisplay()
-
-  deleteGuest: (id) ->
-    @invitation.deleteGuest(id)
-    @updateDisplay()
-
-  turnOnPhoneEdition: ->
-    @invitation.turnOnPhoneEdition()
-    @updateDisplay()
-
-  updatePhone: (phone) ->
-    @invitation.updatePhone(phone)
-    @updateDisplay()
-
-  turnOnEmailEdition: ->
-    @invitation.turnOnEmailEdition()
-    @updateDisplay()
-
-  updateEmail: (email) ->
-    @invitation.updateEmail(email)
-    @updateDisplay()
-
-  commit: ->
-    @app.commitEdition(@invitation)
-
-class NewInvitationControl extends EditInvitationControl
-  commit: -> @app.commitAddition(@invitation)
 
 class window.MemoryStore
   constructor: (@records = []) ->
@@ -289,7 +297,14 @@ class window.MemoryStore
   loadRecords: (listener) ->
     listener.recordsLoaded(@records)
 
+  first: ->
+    @records[0]
+
+  find: (id) ->
+    _.find @records, (record) -> record.id is id
+
   saveRecord: (record) ->
+    record.id = @records.length + 1
     @records.push(record)
 
   updateRecord: (newRecord) ->

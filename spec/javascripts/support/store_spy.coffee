@@ -5,6 +5,12 @@ class StoreSpy
   constructor: (@real) ->
     @functionCalls = []
 
+  first: () ->
+    @real.first()
+
+  find: (id) ->
+    @real.find(id)
+
   saveRecord: (record) ->
     @functionCalls.push(new FunctionCall("saveRecord", record))
     @real.saveRecord(record)
