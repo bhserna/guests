@@ -1,5 +1,5 @@
 require "./guests.coffee"
-View = require "./view.coffee"
+Display = require "./display.coffee"
 
 onAction = (event, selector, callback) ->
   $(document).on event, selector, (e) ->
@@ -7,7 +7,7 @@ onAction = (event, selector, callback) ->
     callback($el = $(this))
 
 store = if $("#app").data("listId") then RemoteStore else (new MemoryStore)
-app = new GuestsApp(store, new View)
+app = new GuestsApp(store, new Display)
 
 $ -> $("#invitationTitle").focus()
 
