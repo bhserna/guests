@@ -35,6 +35,7 @@ class ListsRouter < BaseRouter
 
   get "/lists/:id" do
     @list = Lists.get_list(params[:id], Lists::Store)
+    @invitations = List.get_invitations(params[:id], Lists::InvitationsStore)
     erb :"lists/show"
   end
 

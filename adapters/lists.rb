@@ -27,6 +27,24 @@ module Lists
     end
   end
 
+  module InvitationsStore
+    class ListInvitation < ActiveRecord::Base
+      serialize :guests, Array
+    end
+
+    def self.create(record)
+      ListInvitation.create(record)
+    end
+
+    def self.update(id, attrs)
+      ListInvitation.update(id, attrs)
+    end
+
+    def self.find_all_by_list_id(list_id)
+      ListInvitation.where(list_id: list_id)
+    end
+  end
+
   module PeopleStore
     class ListPerson < ActiveRecord::Base
     end

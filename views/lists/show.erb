@@ -4,6 +4,52 @@
     <h1>Lista: <%= @list.name %></h1>
   </div>
 
+  <div class="row">
+    <div class="col-md-3">
+    </div>
+    <div class="col-md-9">
+      <div class="page-header">
+        <h3>Invitaciones (<%= @invitations.count %>)</h3>
+      </div>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Invitados</th>
+              <th>Contacto</th>
+              <th class="text-center">¿Entregada?</th>
+              <th class="text-center">Confirmados</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @invitations.each do |invitation| %>
+              <tr>
+                <td><%= invitation.title %></td>
+                <td><%= invitation.guests.map(&:name).join(", ") %></td>
+                <td>
+                  <% if invitation.phone %>
+                    <small class="text-muted">Teléfono:</small>
+                    <br/><span><%= invitation.phone %></span>
+                    <br/>
+                  <% end %>
+                  <% if invitation.email %>
+                    <small class="text-muted">Correo:</small>
+                    <br/><span><%= invitation.email %></span>
+                    <br/>
+                  <% end %>
+                </td>
+                <td>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <div id="app" data-list-id="<%= @list.id %>"></div>
 </div>
 

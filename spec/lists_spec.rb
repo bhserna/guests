@@ -47,4 +47,18 @@ module Lists
         .map { |r| r[:list_id] }
     end
   end
+
+  class FakeInvitationsStore
+    def initialize(records = [])
+      @records = records
+    end
+
+    def find(id)
+      @records.detect { |r| r[:id] == id }
+    end
+
+    def find_all_by_list_id(list_id)
+      @records.select { |r| r[:list_id] == list_id }
+    end
+  end
 end
