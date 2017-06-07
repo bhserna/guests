@@ -1,4 +1,5 @@
 require_relative "validations"
+require_relative "lists/invitation"
 
 module Lists
   class ErrorWithForm
@@ -77,5 +78,37 @@ module Lists
 
   def self.has_access?(*args)
     AccessControl.has_access?(*args)
+  end
+
+  def self.add_invitation(list_id, params, store)
+    invitation = Invitation.new(params)
+    store.create(invitation.creation_data.merge(list_id: list_id))
+  end
+
+  def self.update_invitation(id, params, store)
+    invitation = Invitation.new(params)
+    store.update(id, invitation.creation_data)
+  end
+
+  def self.mark_invitation_as_delivered(id, store)
+    store.update(id, is_delivered: true)
+  end
+
+  def self.confirm_invitation_guests(id, count, store)
+    store.update(id, confirmed_guests_count: count.to_i, is_assistance_confirmed: true)
+  end
+
+  def self.delete_invitation(id, store)
+    store.update(id, is_deleted: true)
+  end
+
+  def self.get_invitation(id, store)
+    Invitation.new(store.find(id))
+  end
+
+  def self.get_invitations(list_id, store)
+    store.find_all_by_list_id(list_id).map do |data|
+      Invitation.new(data)
+    end
   end
 end

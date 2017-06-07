@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 gem 'sinatra'
-gem 'activesupport'
-gem 'activerecord'
+gem 'activesupport', "~> 4.2.0"
+gem 'activerecord', "~> 4.2.0"
 gem "sinatra-partial"
 gem "bcrypt"
 gem "json"
